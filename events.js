@@ -1,4 +1,3 @@
-
 let db;
 
 function openDB() {
@@ -74,6 +73,41 @@ function exportToJsonl(events) {
     URL.revokeObjectURL(url);
 }
 
+async function importData(file) {
+    const content = await file.text();
+    const events = content.split('\n').filter(line => line.trim() !== '').map(JSON.parse);
+    
+    try {
+        await openDB();
+        const transaction = db.transaction(["Events"], "readwrite");
+        const store = transaction.objectStore("Events");
+        
+        for (const event of events) {
+            await store.add(event);
+        }
+        
+        console.log("Data imported successfully");
+        return await getAllData();
+    } catch (error) {
+        console.error("Error importing data:", error);
+    }
+}
+
+function handleImport() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    
+    if (file) {
+        importData(file).then(updatedEvents => {
+            if (updatedEvents) {
+                populateTable(updatedEvents);
+            }
+        });
+    } else {
+        alert("Please select a file to import.");
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async function () {
     const events = await getAllData();
     populateTable(events);
@@ -81,4 +115,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     document.getElementById('exportButton').addEventListener('click', function () {
         exportToJsonl(events);
     });
+
+    document.getElementById('importButton').addEventListener('click', handleImport);
 });
