@@ -131,7 +131,7 @@ chrome.debugger.onEvent.addListener(function (source, method, params) {
         let to_save = {
             "code": data["code"],
             "timestamp": data["timestamp"],
-            "data": JSON.parse(data["payload"])
+            "data": data
         }
         saveData(to_save);
     }
