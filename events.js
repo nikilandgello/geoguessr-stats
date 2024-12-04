@@ -116,149 +116,202 @@ function handleImport() {
     }
 }
 
-function getGameOptions(events) {
-    var filteredEvents = events.filter(event => event.code == "LiveChallengeFinished");
-    var gameOptions = new Map();
-    for (var event of filteredEvents) {
-        event.liveChallenge.state.options["date"] = new Date(event.timestamp);
-        gameOptions[event.gameId] = event.liveChallenge.state.options;
-    }
-    return gameOptions;
-}
+class Stats {
+    constructor(events) {
+        this.events = events;
+        this.gameOptions = this.getGameOptions();
 
+        var maps = new Set();
+        for (let game of Object.entries(this.gameOptions)) {
+            maps.add(game[1].mapSlug);
+        }
+        this.map = "world";
+        this.addSelectOptions(maps);
 
-function populateTopScore(events, gameOptions, map = "world", today = false) {
-    if (today)
-        var topScoreDiv = document.getElementById('topScoreToday');
-    else
-        var topScoreDiv = document.getElementById('topScoreAllTime');
-    var scoreList = topScoreDiv.getElementsByClassName("scoreList")[0];
-    while (scoreList.firstChild) {
-        scoreList.removeChild(scoreList.lastChild);
+        this.players = this.getPlayers();
+        this.addPlayersSelectOptions();
     }
 
-    // filter events by code = LiveChallengeLeaderboardUpdate
-    var filteredEvents = events.filter(event => event.code == "LiveChallengeLeaderboardUpdate");
-    // filter events where map is default, only 5 rounds are played, and no movement allowed
-    filteredEvents = filteredEvents.filter(event => event.gameId in gameOptions);
-    filteredEvents = filteredEvents.filter(event => gameOptions[event.gameId].mapSlug == map);
-    filteredEvents = filteredEvents.filter(event => gameOptions[event.gameId].roundCount == 5);
-    filteredEvents = filteredEvents.filter(event => gameOptions[event.gameId].movementOptions.forbidMoving);
+    getGameOptions() {
+        var filteredEvents = this.events.filter(event => event.code == "LiveChallengeFinished");
+        var gameOptions = new Map();
+        for (var event of filteredEvents) {
+            event.liveChallenge.state.options["date"] = new Date(event.timestamp);
+            gameOptions[event.gameId] = event.liveChallenge.state.options;
+        }
+        return gameOptions;
+    }
 
-    // if today=true, filter by date
-    if (today) {
-        filteredEvents = filteredEvents.filter(event => {
-            let date = new Date(event.timestamp);
-            date.setHours(12, 0, 0, 0);
-            let today_date = new Date();
-            today_date.setHours(12, 0, 0, 0);
-            return today_date.getTime() == date.getTime()
-        });
-    } else {
-        filteredEvents = filteredEvents.filter(event => {
-            let date = new Date(event.timestamp);
-            date.setHours(12, 0, 0, 0);
-            let today_date = new Date(2024, 7, 4);
-            today_date.setHours(12, 0, 0, 0);
-            return today_date.getTime() <= date.getTime()
-        });
-    } 
+    addSelectOptions(maps) {
+        const mapSelect = document.getElementById("mapSelect");
 
-    // extract all round scores
-    var roundScores = [];
-    var nonStandardGames = new Set();
-    for (var event of filteredEvents) {
-        let gameId = event.gameId;
-        let roundNumber = event.liveChallenge.leaderboards.round.roundNumber;
-        for (let i = 0; i < event.liveChallenge.leaderboards.round.guesses.length; i++) {
-            let guess = event.liveChallenge.leaderboards.round.guesses[i];
-            let entry = event.liveChallenge.leaderboards.round.entries[i];
-            if (!guess) {
-                guess = {};
+        for (let map of maps) {
+            var option;
+            if (map == "5d374dc141d2a43c1cd4527b")
+                option = new Option("GeoDetective", map);
+            else if (map == "world")
+                option = new Option(map, map, true, true);
+            else
+                option = new Option(map, map);
+            mapSelect.options[mapSelect.options.length] = option;
+        }
+        mapSelect.addEventListener("change", (e) => {
+            this.map = e.target.value;
+            this.populateTopScore();
+            this.populateTopScore(true);
+        })
+    }
+
+    getPlayers(today = true) {
+        var players = new Set();
+
+        var filteredEvents = this.events.filter(event => event.code == "LiveChallengeLeaderboardUpdate");
+        if (today) {
+            filteredEvents = filteredEvents.filter(event => {
+                let date = new Date(event.timestamp);
+                date.setHours(12, 0, 0, 0);
+                let today_date = new Date();
+                today_date.setHours(12, 0, 0, 0);
+                return today_date.getTime() == date.getTime()
+            });
+        }
+
+        for (var event of filteredEvents) {
+            for (let i = 0; i < event.liveChallenge.leaderboards.round.guesses.length; i++) {
+                let entry = event.liveChallenge.leaderboards.round.entries[i];
+                players.add(entry.name);
             }
-            guess["gameId"] = gameId;
-            guess["roundNumber"] = roundNumber;
-            if (roundNumber > 5)
-                nonStandardGames.add(gameId);
-            guess["playerName"] = entry.name;
-            roundScores.push(guess);
         }
-    }
-    var roundScoresCopy = roundScores;
-    roundScores = [];
-    for (var score of roundScoresCopy) {
-        if (!nonStandardGames.has(score["gameId"]))
-            roundScores.push(score);
+
+        return players;
     }
 
-    // deduplicate roundScores by gameId, roundNumber and playerName
-    var uniqueRoundScores = [];
-    var uniqueRoundScoresHashes = new Set();
-    for (var score of roundScores) {
-        let hash = `${score.gameId}-${score.roundNumber}-${score.playerName}`;
-        if (!uniqueRoundScoresHashes.has(hash)) {
-            uniqueRoundScoresHashes.add(hash);
-            uniqueRoundScores.push(score);
-        }
+    addPlayersSelectOptions() {
+        const select = document.getElementById("topScoreTodayPlayerSelect");
+
+        for (let player of this.players)
+            select.options[select.options.length] = new Option(player, player);
+
+        select.addEventListener("change", (e) => {
+            this.populateTopScoreToday(e.target.value);
+        })
     }
 
-    // calculate total score for each game and playerName, save result in gameScores
-    var gameScores = [];
-    for (var score of uniqueRoundScores) {
-        var gameId = score.gameId;
-        var gameOption = gameOptions[gameId];
-        var playerName = score.playerName;
-        if (!gameScores.find(s => s.gameId == gameId && s.playerName == playerName)) {
-            gameScores.push({ gameId, playerName, "date": gameOption.date, totalScore: 0 });
-        }
-        var gameScore = gameScores.find(s => s.gameId == gameId && s.playerName == playerName);
-        gameScore.totalScore += score.score;
-    }
-    gameScores = gameScores.filter((record) => !isNaN(record.totalScore));
-
-    // sort gameScores by totalScore descending
-    gameScores = gameScores.sort((a, b) => b.totalScore - a.totalScore);
-    gameScores = gameScores.slice(0, 5);
-
-    // populate topScoreToday div
-    for (var score of gameScores) {
-        scoreList.innerHTML += `<li>${score.playerName}: ${score.totalScore} (${score.date.toLocaleDateString()})</li>`;
-    }
-}
-
-function addSelectOptions(events, gameOptions, maps) {
-    const mapSelect = document.getElementById("mapSelect");
-
-    for (let map of maps) {
-        var option;
-        if (map == "5d374dc141d2a43c1cd4527b")
-            option = new Option("GeoDetective", map);
-        else if (map == "world")
-            option = new Option(map, map, true, true);
+    populateTopScore(today = false, player = null) {
+        if (today)
+            var topScoreDiv = document.getElementById('topScoreToday');
         else
-            option = new Option(map, map);
-        mapSelect.options[mapSelect.options.length] = option;
+            var topScoreDiv = document.getElementById('topScoreAllTime');
+        var scoreList = topScoreDiv.getElementsByClassName("scoreList")[0];
+        while (scoreList.firstChild) {
+            scoreList.removeChild(scoreList.lastChild);
+        }
+
+        // filter events by code = LiveChallengeLeaderboardUpdate
+        var filteredEvents = this.events.filter(event => event.code == "LiveChallengeLeaderboardUpdate");
+        // filter events where map is default, only 5 rounds are played, and no movement allowed
+        filteredEvents = filteredEvents.filter(event => event.gameId in this.gameOptions);
+        filteredEvents = filteredEvents.filter(event => this.gameOptions[event.gameId].mapSlug == this.map);
+        filteredEvents = filteredEvents.filter(event => this.gameOptions[event.gameId].roundCount == 5);
+        filteredEvents = filteredEvents.filter(event => this.gameOptions[event.gameId].movementOptions.forbidMoving);
+
+        // if today=true, filter by date
+        if (today) {
+            filteredEvents = filteredEvents.filter(event => {
+                let date = new Date(event.timestamp);
+                date.setHours(12, 0, 0, 0);
+                let today_date = new Date();
+                today_date.setHours(12, 0, 0, 0);
+                return today_date.getTime() == date.getTime()
+            });
+        } else {
+            filteredEvents = filteredEvents.filter(event => {
+                let date = new Date(event.timestamp);
+                date.setHours(12, 0, 0, 0);
+                let today_date = new Date(2024, 7, 4);
+                today_date.setHours(12, 0, 0, 0);
+                return today_date.getTime() <= date.getTime()
+            });
+        }
+
+        // extract all round scores
+        var roundScores = [];
+        var nonStandardGames = new Set();
+        for (var event of filteredEvents) {
+            let gameId = event.gameId;
+            let roundNumber = event.liveChallenge.leaderboards.round.roundNumber;
+            for (let i = 0; i < event.liveChallenge.leaderboards.round.guesses.length; i++) {
+                let guess = event.liveChallenge.leaderboards.round.guesses[i];
+                let entry = event.liveChallenge.leaderboards.round.entries[i];
+                if (!guess) {
+                    guess = {};
+                }
+                guess["gameId"] = gameId;
+                guess["roundNumber"] = roundNumber;
+                if (roundNumber > 5)
+                    nonStandardGames.add(gameId);
+                guess["playerName"] = entry.name;
+                roundScores.push(guess);
+            }
+        }
+        var roundScoresCopy = roundScores;
+        roundScores = [];
+        for (var score of roundScoresCopy) {
+            if (!nonStandardGames.has(score["gameId"]))
+                roundScores.push(score);
+        }
+
+        // deduplicate roundScores by gameId, roundNumber and playerName
+        var uniqueRoundScores = [];
+        var uniqueRoundScoresHashes = new Set();
+        for (var score of roundScores) {
+            let hash = `${score.gameId}-${score.roundNumber}-${score.playerName}`;
+            if (!uniqueRoundScoresHashes.has(hash)) {
+                uniqueRoundScoresHashes.add(hash);
+                uniqueRoundScores.push(score);
+            }
+        }
+
+        // calculate total score for each game and playerName, save result in gameScores
+        var gameScores = [];
+        for (var score of uniqueRoundScores) {
+            var gameId = score.gameId;
+            var gameOption = this.gameOptions[gameId];
+            var playerName = score.playerName;
+            if (!gameScores.find(s => s.gameId == gameId && s.playerName == playerName)) {
+                gameScores.push({ gameId, playerName, "date": gameOption.date, totalScore: 0 });
+            }
+            var gameScore = gameScores.find(s => s.gameId == gameId && s.playerName == playerName);
+            gameScore.totalScore += score.score;
+        }
+        gameScores = gameScores.filter((record) => !isNaN(record.totalScore));
+        if (player && player != "All")
+            gameScores = gameScores.filter((record) => record.playerName == player)
+
+        // sort gameScores by totalScore descending
+        gameScores = gameScores.sort((a, b) => b.totalScore - a.totalScore);
+        gameScores = gameScores.slice(0, 5);
+
+        // populate topScoreToday div
+        for (var score of gameScores) {
+            scoreList.innerHTML += `<li>${score.playerName}: ${score.totalScore} (${score.date.toLocaleDateString()})</li>`;
+        }
     }
-    mapSelect.addEventListener("change", (e) => {
-        populateTopScore(events, gameOptions, e.target.value);
-        populateTopScore(events, gameOptions, e.target.value, true);
-    })
+
+    populateTopScoreToday(player = null) {
+        this.populateTopScore(true, player);
+    }
 }
 
 
 document.addEventListener('DOMContentLoaded', async function () {
     const events = await getAllData();
-    const gameOptions = getGameOptions(events);
 
-    var maps = new Set();
-    for (let game of Object.entries(gameOptions)) {
-        maps.add(game[1].mapSlug);
-    }
-    addSelectOptions(events, gameOptions, maps);
+    var stats = new Stats(events);
+    stats.populateTopScore();
+    stats.populateTopScoreToday();
 
     populateTable(events);
-    populateTopScore(events, gameOptions);
-    populateTopScore(events, gameOptions, 'world', true);
 
     document.getElementById('exportButton').addEventListener('click', function () {
         exportToJsonl(events);
