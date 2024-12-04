@@ -38,11 +38,18 @@
     <button id="exportButton">Export All Data</button>
     <input type="file" id="fileInput" accept=".json,.jsonl">
     <button id="importButton">Import Data</button>
+    <div id="mapSelectContainer">
+        <select id="mapSelect"> 
+            <option value=""></option>
+        </select>
+    </div>
     <div id="topScoreAllTime">
         <h2>Top score all time</h2>
+        <ul class="scoreList"></ul>
     </div>
     <div id="topScoreToday">
         <h2>Top score today</h2>
+        <ul class="scoreList"></ul>
     </div>
     <h2>Last 15 events</h2>
     <table id="eventsTable">
