@@ -129,6 +129,7 @@ class Stats {
         this.addSelectOptions(maps);
 
         this.players = this.getPlayers();
+        this.players_today = this.getPlayers(true);
         this.addPlayersSelectOptions();
     }
 
@@ -162,8 +163,8 @@ class Stats {
         })
     }
 
-    getPlayers(today = true) {
-        var players = new Set();
+    getPlayers(today = false) {
+        var players = new Map();
 
         var filteredEvents = this.events.filter(event => event.code == "LiveChallengeLeaderboardUpdate");
         if (today) {
@@ -179,22 +180,44 @@ class Stats {
         for (var event of filteredEvents) {
             for (let i = 0; i < event.liveChallenge.leaderboards.round.guesses.length; i++) {
                 let entry = event.liveChallenge.leaderboards.round.entries[i];
-                players.add(entry.name);
+                let player_name = entry.name;
+                if (players.has(player_name)) {
+                    let old_val = players.get(player_name);
+                    players.set(player_name, old_val + 1);
+                }
+                else
+                    players.set(player_name, 1);
             }
         }
+        console.log(players);
 
-        return players;
+        var players = Array.from(players).map(([name, value]) => ({ name, value }))
+        players = players.sort((a, b) => b.value - a.value);
+
+        players = players.slice(0, 10);
+        var result = [];
+
+        players.forEach(player => {
+            result.push(player.name);
+        });
+
+        return result;
     }
 
     addPlayersSelectOptions() {
-        const select = document.getElementById("topScoreTodayPlayerSelect");
-
-        for (let player of this.players)
+        var select = document.getElementById("topScoreTodayPlayerSelect");
+        for (let player of this.players_today)
             select.options[select.options.length] = new Option(player, player);
-
         select.addEventListener("change", (e) => {
             this.populateTopScoreToday(e.target.value);
         })
+
+        select = document.getElementById("topScoreAllTimePlayerSelect");
+        for (let player of this.players)
+            select.options[select.options.length] = new Option(player, player);
+        select.addEventListener("change", (e) => {
+            this.populateTopScore(false, e.target.value);
+        });
     }
 
     populateTopScore(today = false, player = null) {
