@@ -62,7 +62,7 @@ async function getAllData() {
 
 function populateTable(events) {
     const tableBody = document.getElementById('eventsTableBody');
-    tableBody.innerHTML = '';
+    tableBody.textContent = '';
     events = events.slice(-15);
     events = events.reverse();
     events.forEach(event => {
@@ -320,7 +320,9 @@ class Stats {
 
         // populate topScoreToday div
         for (var score of gameScores) {
-            scoreList.innerHTML += `<li>${score.playerName}: ${score.totalScore} (${score.date.toLocaleDateString()})</li>`;
+            let li = document.createElement("li");
+            li.innerText = `${score.playerName}: ${score.totalScore} (${score.date.toLocaleDateString()})`;
+            scoreList.appendChild(li);
         }
     }
 
