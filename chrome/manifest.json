@@ -1,0 +1,42 @@
+{
+    "manifest_version": 3,
+    "name": "Geoguessr Stats",
+    "version": "0.0.2",
+    "description": "Collect your party geoguessr games.",
+    "action": {
+        "default_title": "Geoguessr Stats"
+    },
+    "permissions": [
+        "storage",
+        "tabs"
+    ],
+    "host_permissions": [
+        "https://www.geoguessr.com/*",
+        "wss://api.geoguessr.com/ws"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "world": "MAIN",
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content_main.js"
+            ],
+            "run_at": "document_start"
+        },
+        {
+            "world": "ISOLATED",
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content_isolated.js"
+            ],
+            "run_at": "document_start"
+        }
+    ]
+}

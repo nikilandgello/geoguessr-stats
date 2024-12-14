@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoGuessr Stats</title>
+    <style>
+        body {
+            width: 500px;
+            font-family: Arial, sans-serif;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="exportButton">Export All Data</button>
+    <input type="file" id="fileInput" accept=".json,.jsonl">
+    <button id="importButton">Import Data</button>
+    <div id="mapSelectContainer">
+        <select id="mapSelect"> 
+            <option value=""></option>
+        </select>
+    </div>
+    <div id="topScoreAllTime">
+        <h2>Top score all time</h2>
+        <select id="topScoreAllTimePlayerSelect">
+            <option value="All">All</option>
+        </select>
+        <ul class="scoreList"></ul>
+    </div>
+    <div id="topScoreToday">
+        <h2>Top score today</h2>
+        <select id="topScoreTodayPlayerSelect">
+            <option value="All">All</option>
+        </select>
+        <ul class="scoreList"></ul>
+    </div>
+    <h2>Last 15 events</h2>
+    <table id="eventsTable">
+        <thead>
+            <tr>
+                <th>Row</th>
+            </tr>
+        </thead>
+        <tbody id="eventsTableBody">
+        </tbody>
+    </table>
+
+    <script src="events.js">
+    </script>
+</body>
+
+</html>
