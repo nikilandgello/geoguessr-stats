@@ -17,10 +17,6 @@
     "permissions": [
         "storage"
     ],
-    "host_permissions": [
-        "https://www.geoguessr.com/*",
-        "wss://api.geoguessr.com/ws"
-    ],
     "background": {
         "scripts": [
             "background.js"
@@ -30,7 +26,8 @@
         {
             "world": "MAIN",
             "matches": [
-                "<all_urls>"
+                "https://www.geoguessr.com/*",
+                "wss://api.geoguessr.com/ws"
             ],
             "js": [
                 "content_main.js"
@@ -40,7 +37,8 @@
         {
             "world": "ISOLATED",
             "matches": [
-                "<all_urls>"
+                "https://www.geoguessr.com/*",
+                "wss://api.geoguessr.com/ws"
             ],
             "js": [
                 "content_isolated.js"
