@@ -1,10 +1,12 @@
-chrome.action.onClicked.addListener((tab) => {
-    chrome.tabs.create({
-        url: chrome.runtime.getURL("events.html")
+console.log("background.js");
+browser.action.onClicked.addListener((message) => {
+    browser.tabs.create({
+        url: 'events.html'
     });
 });
 
 let db;
+
 
 function openDB() {
     return new Promise((resolve, reject) => {
@@ -57,82 +59,23 @@ async function saveData(data) {
             };
         });
     } catch (error) {
-        console.error("Error saving data:", error);
+        console.error("Error saving data:", error, data);
     }
 }
 
-async function getAllData() {
-    try {
-        await openDB();
-        return new Promise((resolve, reject) => {
-            let transaction = db.transaction(["Events"], "readonly");
-            let store = transaction.objectStore("Events");
-            let request = store.getAll();
+browser.runtime.onMessage.addListener((message) => {
+    console.log("ws: received data from content script", message);
 
-            request.onsuccess = function (event) {
-                console.log("All data retrieved:", event.target.result);
-                resolve(event.target.result);
-            };
-
-            request.onerror = function (event) {
-                console.error("Error getting all data:", event.target.error);
-                reject("Error getting all data");
-            };
-        });
-    } catch (error) {
-        console.error("Error in getAllData:", error);
+    let data = JSON.parse(message.data);
+    if (data["code"] == "BullseyeGuess")
+        return
+    let to_save = {
+        "code": data["code"],
+        "timestamp": data["timestamp"],
+        "data": data
     }
-}
+    console.log(to_save);
+    saveData(to_save);
 
-// Function to attach debugger and enable network
-function attachDebuggerAndEnableNetwork(tabId) {
-    // check if debugger is already attached
-    chrome.debugger.getTargets((targets) => {
-        for (let target of targets) {
-            if (target.attached && target.tabId == tabId) {
-                console.log("Debugger is already attached to tab", tabId);
-                return;
-            }
-        }
-
-        chrome.debugger.attach({ tabId: tabId }, "1.2", () => {
-            if (chrome.runtime.lastError) {
-                console.error("Debugger attach error:", chrome.runtime.lastError.message);
-                return;
-            }
-
-            chrome.debugger.sendCommand({ tabId: tabId }, "Network.enable", {}, function () {
-                if (chrome.runtime.lastError) {
-                    console.error("Network enable error:", chrome.runtime.lastError.message);
-                } else {
-                    console.log("Network enabled for tab", tabId);
-                }
-            });
-        });
-
-    });
-
-}
-
-// Listen for tab updates
-chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-    if (changeInfo.status === 'complete' && tab.url && tab.url.startsWith('http')) {
-        attachDebuggerAndEnableNetwork(tabId);
-    }
-});
-
-// Listen for debugger events
-chrome.debugger.onEvent.addListener(function (source, method, params) {
-    if (method === "Network.webSocketFrameReceived") {
-        data = JSON.parse(params["response"]["payloadData"]);
-        console.log("WebSocket Frame Received:", data);
-        if (data["code"] == "BullseyeGuess")
-            return
-        let to_save = {
-            "code": data["code"],
-            "timestamp": data["timestamp"],
-            "data": data
-        }
-        saveData(to_save);
-    }
+    console.log("ws: data saved", message);
 });

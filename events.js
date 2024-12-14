@@ -10,13 +10,16 @@ function openDB() {
         let dbRequest = indexedDB.open("GeoGuessrStats", 1);
 
         dbRequest.onupgradeneeded = function (event) {
+            console.log("Database upgrade needed");
             db = event.target.result;
             if (!db.objectStoreNames.contains("Events")) {
-                db.createObjectStore("Events", { keyPath: "id" });
+                db.createObjectStore("Events", { keyPath: '_id', autoIncrement: true });
+                console.log("Object store 'Events' created");
             }
         };
 
         dbRequest.onsuccess = function (event) {
+            console.log("Database opened successfully");
             db = event.target.result;
             resolve(db);
         };
@@ -94,7 +97,7 @@ async function importData(file) {
             await store.add(event);
         }
 
-        console.log("Data imported successfully");
+        alert("Data imported successfully");
         return await getAllData();
     } catch (error) {
         console.error("Error importing data:", error);
