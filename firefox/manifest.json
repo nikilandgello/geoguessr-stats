@@ -6,6 +6,11 @@
     "action": {
         "default_title": "Geoguessr Stats"
     },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "{190b7079-27a7-47af-8018-cb6bfcb35711}"
+        }
+    },
     "icons": {
         "128": "../icon.png"
     },
