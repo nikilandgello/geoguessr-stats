@@ -6,9 +6,11 @@
     "action": {
         "default_title": "Geoguessr Stats"
     },
+    "icons": {
+        "128": "../icon.png"
+    },
     "permissions": [
-        "storage",
-        "tabs"
+        "storage"
     ],
     "host_permissions": [
         "https://www.geoguessr.com/*",

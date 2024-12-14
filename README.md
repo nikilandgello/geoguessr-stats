@@ -13,3 +13,7 @@ In party games, Geoguessr uses WebSocket to sync game state between players. The
 # P.S.
 
 I really hope Geoguessr adds a game history feature so that this hacky solution is obsolete.
+
+# Attribution
+
+Logo designed by [Freepik (macrovector)](https://www.freepik.com/free-vector/flat-earth-globes-set_13153619.htm)
