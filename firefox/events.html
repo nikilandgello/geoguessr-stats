@@ -5,69 +5,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GeoGuessr Stats</title>
-    <style>
-        body {
-            width: 500px;
-            font-family: Arial, sans-serif;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        button {
-            margin-top: 10px;
-            padding: 5px 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="events.css">
 </head>
 
 <body>
-    <button id="exportButton">Export All Data</button>
-    <input type="file" id="fileInput" accept=".json,.jsonl">
-    <button id="importButton">Import Data</button>
-    <div id="mapSelectContainer">
-        <select id="mapSelect"> 
-            <option value=""></option>
-        </select>
+    <button id="exportButton">Export Data</button>
+    <div style="display: block;">
+        <button id="importButton" disabled>Import Data</button>
+        <input type="file" id="importFileInput" accept=".json,.jsonl">
     </div>
-    <div id="topScoreAllTime">
-        <h2>Top score all time</h2>
-        <select id="topScoreAllTimePlayerSelect">
-            <option value="All">All</option>
-        </select>
+    <div id="statsFilters">
+        <h2>Map filters</h2>
+        <div class="statsFilter">
+            <span>Timeframe</span>
+            <select id="timeFrameSelect">
+                <option value="allTime">All Time</option>
+                <option value="today">Today</option>
+            </select>
+        </div>
+        <div class="statsFilter">
+            <span>Map</span>
+            <select id="mapSelect">
+                <option value="All">All</option>
+            </select>
+        </div>
+        <div class="statsFilter">
+            <span>Player</span>
+            <select id="playerSelect">
+                <option value="All">All</option>
+            </select>
+        </div>
+        <div class="statsFilter">
+            <span>Round Count</span>
+            <input type="checkbox" id="anyRoundCount" checked />
+            <label for="anyRoundCount">Any</label>
+            <input style="display: none;" type="number" id="roundCount" value="5" min="1" max="50" />
+        </div>
+        <div class="statsFilter">
+            <span>Round Time</span>
+            <input type="checkbox" id="anyRoundTime" checked />
+            <label for="anyRoundTime">Any</label>
+            <input style="display: none;" type="number" id="roundTime" value="90" min="10" max="600" step="10" />
+        </div>
+        <div class="statsFilter">
+            <span>Map settings</span>
+            <div style="display: block;">
+                <input type="checkbox" id="anyOptions" checked />
+                <label for="anyOptions">Any</label>
+                <input style="display: none;" type="checkbox" id="movingAllowed" checked />
+                <label style="display: none;" for="movingAllowed" id="movingAllowedLabel">Moving Allowed</label>
+                <input style="display: none;" type="checkbox" id="panningAllowed" checked />
+                <label style="display: none;" for="panningAllowed" id="panningAllowedLabel">Panning Allowed</label>
+                <input style="display: none;" type="checkbox" id="zoomingAllowed" checked />
+                <label style="display: none;" for="zoomingAllowed" id="zoomingAllowedLabel">Zooming Allowed</label>
+            </div>
+        </div>
+    </div>
+    <div id="topScore">
+        <h2 id="topScoreHeader">Top score</h2>
         <ul class="scoreList"></ul>
     </div>
-    <div id="topScoreToday">
-        <h2>Top score today</h2>
-        <select id="topScoreTodayPlayerSelect">
-            <option value="All">All</option>
-        </select>
-        <ul class="scoreList"></ul>
-    </div>
-    <h2>Last 15 events</h2>
-    <table id="eventsTable">
-        <thead>
-            <tr>
-                <th>Row</th>
-            </tr>
-        </thead>
-        <tbody id="eventsTableBody">
-        </tbody>
-    </table>
-
+    <hr>
+    <details>
+        <summary>Last 15 events</summary>
+        <table id="eventsTable">
+            <thead>
+                <tr>
+                    <th>Row</th>
+                </tr>
+            </thead>
+            <tbody id="eventsTableBody">
+            </tbody>
+        </table>
+    </details>
     <script src="events.js">
     </script>
 </body>

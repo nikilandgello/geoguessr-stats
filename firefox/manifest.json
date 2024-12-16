@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Geoguessr Stats",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "Collect your party geoguessr games.",
     "action": {
         "default_title": "Geoguessr Stats"
@@ -26,8 +26,7 @@
         {
             "world": "MAIN",
             "matches": [
-                "https://www.geoguessr.com/*",
-                "wss://api.geoguessr.com/ws"
+                "https://www.geoguessr.com/*"
             ],
             "js": [
                 "content_main.js"
@@ -37,8 +36,7 @@
         {
             "world": "ISOLATED",
             "matches": [
-                "https://www.geoguessr.com/*",
-                "wss://api.geoguessr.com/ws"
+                "https://www.geoguessr.com/*"
             ],
             "js": [
                 "content_isolated.js"

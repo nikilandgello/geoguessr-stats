@@ -105,7 +105,7 @@ async function importData(file) {
 }
 
 function handleImport() {
-    const fileInput = document.getElementById('fileInput');
+    const fileInput = document.getElementById('importFileInput');
     const file = fileInput.files[0];
 
     if (file) {
@@ -124,35 +124,94 @@ class Stats {
         this.events = events;
         this.gameOptions = this.getGameOptions();
 
+        this.timeframe = "allTime";
+
         var maps = new Set();
         for (let game of Object.entries(this.gameOptions)) {
             maps.add(game[1].mapSlug);
         }
         this.map = "world";
-        this.addSelectOptions(maps);
+        this.addMapsSelectOptions(maps);
 
+        this.player = "All";
         this.players = this.getPlayers();
         this.players_today = this.getPlayers(true);
         this.addPlayersSelectOptions();
+
+        this.roundCount = 5;
+        this.roundTime = 90;
+        this.movingAllowed = true;
+        this.panningAllowed = true;
+        this.zoomingAllowed = true;
+        this.anyOptions = true;
+        this.anyRoundCount = true;
+        this.anyRoundTime = true;
+        this.addFilterEventListeners();
     }
 
     getGameOptions() {
+        var roundEvents = this.events.filter(event => event.code == "LiveChallengeLeaderboardUpdate");
+        var gameRoundsMap = new Map();
+        for (var event of roundEvents) {
+            if (!(event.gameId in gameRoundsMap))
+                gameRoundsMap[event.gameId] = 1
+            else
+                gameRoundsMap[event.gameId] += 1
+        }
+
         var filteredEvents = this.events.filter(event => event.code == "LiveChallengeFinished");
         var gameOptions = new Map();
         for (var event of filteredEvents) {
             event.liveChallenge.state.options["date"] = new Date(event.timestamp);
-            gameOptions[event.gameId] = event.liveChallenge.state.options;
+            if (event.gameId in gameRoundsMap)
+                gameOptions[event.gameId] = event.liveChallenge.state.options;
         }
         return gameOptions;
     }
 
-    addSelectOptions(maps) {
+    addFilterEventListeners() {
+        let filters = [
+            "timeFrameSelect",
+            "roundCount",
+            "roundTime",
+            "movingAllowed",
+            "panningAllowed",
+            "zoomingAllowed",
+            "anyOptions",
+            "anyRoundCount",
+            "anyRoundTime"
+        ]
+        filters.forEach(element => {
+            document.getElementById(element).addEventListener("change", (e) => {
+                this[element] = (e.target.value != "on") ? e.target.value : e.target.checked;
+                this.populateTopScore();
+            })
+        });
+    }
+
+    addMapsSelectOptions(maps) {
         const mapSelect = document.getElementById("mapSelect");
+
+        let popularMaps = {
+            "57357d9f77abe957e8cfd15f": "Dumb test",
+            "62a44b22040f04bd36e8a914": "A Community World",
+            "5d0ce72c8b19a91fe05aa7a8": "Flags of the World",
+            "56f28536148a781b143b0c3b": "European stadiums",
+            "5cfda2c9bc79e16dd866104d": "I Saw The Sign 2.0",
+            "5b0d907bfaa4cf3ce43bc6b1": "500 000 lieux en France métropolitaine !",
+            "56e45886dc7cd6a164e861ac": "US Cities",
+            "5d374dc141d2a43c1cd4527b": "GeoDetective",
+            "60de2a8a81b92c00015f29e1": "The 198 Capitals Of The World",
+            "5d73f83d82777cb5781464f2": "A Balanced World",
+            "5dbaf08ed0d2a478444d2e8e": "AI Generated World",
+            "5cd30a0d17e6fc441ceda867": "An Extraordinary World",
+            "6029991c5048850001d572a9": "A Pinpointable World"
+        }
 
         for (let map of maps) {
             var option;
-            if (map == "5d374dc141d2a43c1cd4527b")
-                option = new Option("GeoDetective", map);
+            if (map in popularMaps)
+                option = new Option(popularMaps[map], map);
             else if (map == "world")
                 option = new Option(map, map, true, true);
             else
@@ -162,7 +221,6 @@ class Stats {
         mapSelect.addEventListener("change", (e) => {
             this.map = e.target.value;
             this.populateTopScore();
-            this.populateTopScore(true);
         })
     }
 
@@ -192,7 +250,6 @@ class Stats {
                     players.set(player_name, 1);
             }
         }
-        console.log(players);
 
         var players = Array.from(players).map(([name, value]) => ({ name, value }))
         players = players.sort((a, b) => b.value - a.value);
@@ -208,55 +265,46 @@ class Stats {
     }
 
     addPlayersSelectOptions() {
-        var select = document.getElementById("topScoreTodayPlayerSelect");
-        for (let player of this.players_today)
-            select.options[select.options.length] = new Option(player, player);
-        select.addEventListener("change", (e) => {
-            this.populateTopScoreToday(e.target.value);
-        })
-
-        select = document.getElementById("topScoreAllTimePlayerSelect");
+        var select = document.getElementById("playerSelect");
         for (let player of this.players)
             select.options[select.options.length] = new Option(player, player);
         select.addEventListener("change", (e) => {
-            this.populateTopScore(false, e.target.value);
-        });
+            this.player = e.target.value;
+            this.populateTopScore();
+        })
     }
 
-    populateTopScore(today = false, player = null) {
-        if (today)
-            var topScoreDiv = document.getElementById('topScoreToday');
-        else
-            var topScoreDiv = document.getElementById('topScoreAllTime');
+    populateTopScore() {
+        var topScoreDiv = document.getElementById('topScore');
         var scoreList = topScoreDiv.getElementsByClassName("scoreList")[0];
         while (scoreList.firstChild) {
             scoreList.removeChild(scoreList.lastChild);
         }
 
-        // filter events by code = LiveChallengeLeaderboardUpdate
         var filteredEvents = this.events.filter(event => event.code == "LiveChallengeLeaderboardUpdate");
-        // filter events where map is default, only 5 rounds are played, and no movement allowed
         filteredEvents = filteredEvents.filter(event => event.gameId in this.gameOptions);
-        filteredEvents = filteredEvents.filter(event => this.gameOptions[event.gameId].mapSlug == this.map);
-        filteredEvents = filteredEvents.filter(event => this.gameOptions[event.gameId].roundCount == 5);
-        filteredEvents = filteredEvents.filter(event => this.gameOptions[event.gameId].movementOptions.forbidMoving);
 
-        // if today=true, filter by date
-        if (today) {
+        if (this.map != "All")
+            filteredEvents = filteredEvents.filter(event => this.gameOptions[event.gameId].mapSlug == this.map);
+        if (!this.anyRoundCount) {
+            filteredEvents = filteredEvents.filter(event => this.gameOptions[event.gameId].roundCount == this.roundCount);
+        }
+        if (!this.anyOptions) {
+            filteredEvents = filteredEvents.filter(event => this.gameOptions[event.gameId].movementOptions.forbidMoving == !this.movingAllowed);
+            filteredEvents = filteredEvents.filter(event => this.gameOptions[event.gameId].movementOptions.forbidRotating == !this.panningAllowed);
+            filteredEvents = filteredEvents.filter(event => this.gameOptions[event.gameId].movementOptions.forbidZooming == !this.zoomingAllowed);
+        }
+        if (!this.anyRoundTime) {
+            filteredEvents = filteredEvents.filter(event => this.gameOptions[event.gameId].roundTime == this.roundTime);
+        }
+
+        if (this.timeframe == "today") {
             filteredEvents = filteredEvents.filter(event => {
                 let date = new Date(event.timestamp);
                 date.setHours(12, 0, 0, 0);
                 let today_date = new Date();
                 today_date.setHours(12, 0, 0, 0);
                 return today_date.getTime() == date.getTime()
-            });
-        } else {
-            filteredEvents = filteredEvents.filter(event => {
-                let date = new Date(event.timestamp);
-                date.setHours(12, 0, 0, 0);
-                let today_date = new Date(2024, 7, 4);
-                today_date.setHours(12, 0, 0, 0);
-                return today_date.getTime() <= date.getTime()
             });
         }
 
@@ -311,8 +359,8 @@ class Stats {
             gameScore.totalScore += score.score;
         }
         gameScores = gameScores.filter((record) => !isNaN(record.totalScore));
-        if (player && player != "All")
-            gameScores = gameScores.filter((record) => record.playerName == player)
+        if (this.player && this.player != "All")
+            gameScores = gameScores.filter((record) => record.playerName == this.player)
 
         // sort gameScores by totalScore descending
         gameScores = gameScores.sort((a, b) => b.totalScore - a.totalScore);
@@ -346,4 +394,31 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
 
     document.getElementById('importButton').addEventListener('click', handleImport);
+
+    document.getElementById("importFileInput").addEventListener("change", (_) => {
+        document.getElementById('importButton').disabled = false;
+    })
+
+    document.getElementById("anyOptions").addEventListener("change", (e) => {
+        let otherOptions = [
+            "movingAllowed",
+            "panningAllowed",
+            "zoomingAllowed",
+            "movingAllowedLabel",
+            "panningAllowedLabel",
+            "zoomingAllowedLabel"
+        ]
+        otherOptions.forEach((option) => {
+            document.getElementById(option).style.display = (e.target.checked) ? 'none' : "inline-block";
+        })
+    })
+
+    document.getElementById("anyRoundTime").addEventListener("change", (e) => {
+        document.getElementById("roundTime").style.display = (e.target.checked) ? 'none' : "inline-block";
+    })
+
+    document.getElementById("anyRoundCount").addEventListener("change", (e) => {
+        document.getElementById("roundCount").style.display = (e.target.checked) ? 'none' : "inline-block";
+    })
+
 });
