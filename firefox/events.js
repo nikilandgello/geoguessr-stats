@@ -98,7 +98,7 @@ async function importData(file) {
         }
 
         alert("Data imported successfully");
-        return await getAllData();
+        return await populate();
     } catch (error) {
         console.error("Error importing data:", error);
     }
@@ -380,7 +380,7 @@ class Stats {
 }
 
 
-document.addEventListener('DOMContentLoaded', async function () {
+async function populate() {
     const events = await getAllData();
 
     var stats = new Stats(events);
@@ -420,5 +420,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     document.getElementById("anyRoundCount").addEventListener("change", (e) => {
         document.getElementById("roundCount").style.display = (e.target.checked) ? 'none' : "inline-block";
     })
+}
 
-});
+
+document.addEventListener('DOMContentLoaded', populate);
