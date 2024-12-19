@@ -124,7 +124,7 @@ class Stats {
         this.events = events;
         this.gameOptions = this.getGameOptions();
 
-        this.timeframe = "allTime";
+        this.timeFrame = "allTime";
 
         var maps = new Set();
         for (let game of Object.entries(this.gameOptions)) {
@@ -171,7 +171,7 @@ class Stats {
 
     addFilterEventListeners() {
         let filters = [
-            "timeFrameSelect",
+            "timeFrame",
             "roundCount",
             "roundTime",
             "movingAllowed",
@@ -298,7 +298,7 @@ class Stats {
             filteredEvents = filteredEvents.filter(event => this.gameOptions[event.gameId].roundTime == this.roundTime);
         }
 
-        if (this.timeframe == "today") {
+        if (this.timeFrame == "today") {
             filteredEvents = filteredEvents.filter(event => {
                 let date = new Date(event.timestamp);
                 date.setHours(12, 0, 0, 0);
