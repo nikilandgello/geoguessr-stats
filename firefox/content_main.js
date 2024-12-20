@@ -1,12 +1,4 @@
 (function () {
-    WebSocket.prototype.oldSend = WebSocket.prototype.send;
-
-    WebSocket.prototype.send = function (data) {
-        console.log("ws: sending data", data);
-        window.postMessage({ "type": "websocket_sent", "data": data }, "*");
-        WebSocket.prototype.oldSend.apply(this, [data]);
-    };
-
     var oldAddEventListener = WebSocket.prototype.addEventListener;
     WebSocket.prototype.addEventListener = function (eventName, callback) {
         return oldAddEventListener.apply(this, [eventName,

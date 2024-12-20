@@ -1,4 +1,3 @@
-console.log("background.js");
 browser.action.onClicked.addListener((message) => {
     browser.tabs.create({
         url: 'events.html'
@@ -69,13 +68,5 @@ browser.runtime.onMessage.addListener((message) => {
     let data = JSON.parse(message.data);
     if (data["code"] == "BullseyeGuess")
         return
-    let to_save = {
-        "code": data["code"],
-        "timestamp": data["timestamp"],
-        "data": data
-    }
-    console.log(to_save);
-    saveData(to_save);
-
-    console.log("ws: data saved", message);
+    saveData(data);
 });

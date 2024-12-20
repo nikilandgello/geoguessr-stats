@@ -31,7 +31,7 @@ function openDB() {
     });
 }
 
-async function getAllData() {
+async function getEvents() {
     try {
         await openDB();
         return new Promise((resolve, reject) => {
@@ -41,47 +41,16 @@ async function getAllData() {
 
             request.onsuccess = function (event) {
                 let records = event.target.result;
-                var processed_records = [];
-                for (let record of records) {
-                    if ("data" in record)
-                        processed_records.push(record.data)
-                    else
-                        processed_records.push(record)
-                }
-                resolve(processed_records);
-            };
+                resolve(records);
+            }
 
             request.onerror = function (event) {
                 reject("Error getting all data");
             };
         });
     } catch (error) {
-        console.error("Error in getAllData:", error);
+        console.error("Error in getEvents:", error);
     }
-}
-
-function populateTable(events) {
-    const tableBody = document.getElementById('eventsTableBody');
-    tableBody.textContent = '';
-    events = events.slice(-15);
-    events = events.reverse();
-    events.forEach(event => {
-        const row = tableBody.insertRow();
-        row.insertCell(0).textContent = JSON.stringify(event);
-    });
-}
-
-function exportToJsonl(events) {
-    const jsonlContent = events.map(event => JSON.stringify(event)).join('\n');
-    const blob = new Blob([jsonlContent], { type: 'application/x-jsonlines' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'geoguessr_events.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
 }
 
 async function importData(file) {
@@ -98,46 +67,18 @@ async function importData(file) {
         }
 
         alert("Data imported successfully");
-        return await populate();
     } catch (error) {
         console.error("Error importing data:", error);
-    }
-}
-
-function handleImport() {
-    const fileInput = document.getElementById('importFileInput');
-    const file = fileInput.files[0];
-
-    if (file) {
-        importData(file).then(updatedEvents => {
-            if (updatedEvents) {
-                populateTable(updatedEvents);
-            }
-        });
-    } else {
-        alert("Please select a file to import.");
     }
 }
 
 class Stats {
     constructor(events) {
         this.events = events;
-        this.gameOptions = this.getGameOptions();
 
         this.timeFrame = "allTime";
-
-        var maps = new Set();
-        for (let game of Object.entries(this.gameOptions)) {
-            maps.add(game[1].mapSlug);
-        }
         this.map = "world";
-        this.addMapsSelectOptions(maps);
-
         this.player = "All";
-        this.players = this.getPlayers();
-        this.players_today = this.getPlayers(true);
-        this.addPlayersSelectOptions();
-
         this.roundCount = 5;
         this.roundTime = 90;
         this.movingAllowed = true;
@@ -146,7 +87,33 @@ class Stats {
         this.anyOptions = true;
         this.anyRoundCount = true;
         this.anyRoundTime = true;
+
         this.addFilterEventListeners();
+        this.addEventListeners();
+       
+        this.update();
+    }
+
+    update() {
+        this.gameOptions = this.getGameOptions();
+
+        var maps = new Set();
+        for (let game of Object.entries(this.gameOptions)) {
+            maps.add(game[1].mapSlug);
+        }
+        this.addMapsSelectOptions(maps);
+
+        this.players = this.getPlayers();
+        this.addPlayersSelectOptions();
+
+        if (this.events.length > 0) {
+            document.getElementById("eventsStartPlaying").style.display = "none";
+            document.getElementById("eventsTable").style.visibility = "visible";
+        }
+
+        this.populateTopScore();
+        this.populateTable();
+        console.log("Updated");
     }
 
     getGameOptions() {
@@ -189,10 +156,56 @@ class Stats {
         });
     }
 
+    addEventListeners() {
+        document.getElementById('exportButton').addEventListener('click', (_) => { this.exportToJsonl() });
+        document.getElementById('importButton').addEventListener('click', (_) => { this.handleImport() });
+        document.getElementById("importFileInput").addEventListener("change", (_) => {
+            document.getElementById('importButton').disabled = false;
+        })
+
+        document.getElementById("anyOptions").addEventListener("change", (e) => {
+            let otherOptions = [
+                "movingAllowed",
+                "panningAllowed",
+                "zoomingAllowed",
+                "movingAllowedLabel",
+                "panningAllowedLabel",
+                "zoomingAllowedLabel"
+            ]
+            otherOptions.forEach((option) => {
+                document.getElementById(option).style.display = (e.target.checked) ? 'none' : "inline-block";
+            })
+        })
+
+        document.getElementById("anyRoundTime").addEventListener("change", (e) => {
+            if (this.today) {
+                filteredEvents = filteredEvents.filter(event => {
+                    let date = new Date(event.timestamp);
+                    date.setHours(12, 0, 0, 0);
+                    let today_date = new Date();
+                    today_date.setHours(12, 0, 0, 0);
+                    return today_date.getTime() == date.getTime()
+                });
+            } document.getElementById("roundTime").style.display = (e.target.checked) ? 'none' : "inline-block";
+        })
+
+        document.getElementById("anyRoundCount").addEventListener("change", (e) => {
+            document.getElementById("roundCount").style.display = (e.target.checked) ? 'none' : "inline-block";
+        })
+
+        browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+            (async () => {
+                this.events = await getEvents();
+                this.update();
+            })();
+        });
+    }
+
     addMapsSelectOptions(maps) {
         const mapSelect = document.getElementById("mapSelect");
 
         let popularMaps = {
+            "57357d9f77abe957e8cfd10f": "Dumb test",
             "57357d9f77abe957e8cfd15f": "Dumb test",
             "62a44b22040f04bd36e8a914": "A Community World",
             "5d0ce72c8b19a91fe05aa7a8": "Flags of the World",
@@ -201,6 +214,7 @@ class Stats {
             "5b0d907bfaa4cf3ce43bc6b1": "500 000 lieux en France métropolitaine !",
             "56e45886dc7cd6a164e861ac": "US Cities",
             "5d374dc141d2a43c1cd4527b": "GeoDetective",
+            "60de2a8a81b92c00010f29e1": "The 198 Capitals Of The World",
             "60de2a8a81b92c00015f29e1": "The 198 Capitals Of The World",
             "5d73f83d82777cb5781464f2": "A Balanced World",
             "5dbaf08ed0d2a478444d2e8e": "AI Generated World",
@@ -224,19 +238,10 @@ class Stats {
         })
     }
 
-    getPlayers(today = false) {
+    getPlayers() {
         var players = new Map();
 
         var filteredEvents = this.events.filter(event => event.code == "LiveChallengeLeaderboardUpdate");
-        if (today) {
-            filteredEvents = filteredEvents.filter(event => {
-                let date = new Date(event.timestamp);
-                date.setHours(12, 0, 0, 0);
-                let today_date = new Date();
-                today_date.setHours(12, 0, 0, 0);
-                return today_date.getTime() == date.getTime()
-            });
-        }
 
         for (var event of filteredEvents) {
             for (let i = 0; i < event.liveChallenge.leaderboards.round.guesses.length; i++) {
@@ -275,8 +280,7 @@ class Stats {
     }
 
     populateTopScore() {
-        var topScoreDiv = document.getElementById('topScore');
-        var scoreList = topScoreDiv.getElementsByClassName("scoreList")[0];
+        var scoreList = document.getElementById("scoreList");
         while (scoreList.firstChild) {
             scoreList.removeChild(scoreList.lastChild);
         }
@@ -374,53 +378,53 @@ class Stats {
         }
     }
 
-    populateTopScoreToday(player = null) {
-        this.populateTopScore(true, player);
+    populateTable() {
+        const tableBody = document.getElementById('eventsTableBody');
+        tableBody.textContent = '';
+        let eventsSlice = this.events.slice(-10);
+        eventsSlice = eventsSlice.reverse();
+        eventsSlice.forEach(event => {
+            let row = tableBody.insertRow();
+            row.insertCell(0).textContent = JSON.stringify(event.code);
+            row.insertCell(1).textContent = JSON.stringify(event.timestamp);
+            let data = document.createElement("textarea");
+            data.textContent = JSON.stringify(event);
+            row.insertCell(2).appendChild(data);
+        });
+    }
+
+    handleImport() {
+        const fileInput = document.getElementById('importFileInput');
+        const file = fileInput.files[0];
+
+        if (file) {
+            importData(file).then(updatedEvents => {
+                if (updatedEvents) {
+                    this.update();
+                }
+            });
+        } else {
+            alert("Please select a file to import.");
+        }
+    }
+
+    exportToJsonl() {
+        const jsonlContent = this.events.map(event => JSON.stringify(event)).join('\n');
+        const blob = new Blob([jsonlContent], { type: 'application/x-jsonlines' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'geoguessr_events.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 }
 
-
 async function populate() {
-    const events = await getAllData();
-
-    var stats = new Stats(events);
-    stats.populateTopScore();
-    stats.populateTopScoreToday();
-
-    populateTable(events);
-
-    document.getElementById('exportButton').addEventListener('click', function () {
-        exportToJsonl(events);
-    });
-
-    document.getElementById('importButton').addEventListener('click', handleImport);
-
-    document.getElementById("importFileInput").addEventListener("change", (_) => {
-        document.getElementById('importButton').disabled = false;
-    })
-
-    document.getElementById("anyOptions").addEventListener("change", (e) => {
-        let otherOptions = [
-            "movingAllowed",
-            "panningAllowed",
-            "zoomingAllowed",
-            "movingAllowedLabel",
-            "panningAllowedLabel",
-            "zoomingAllowedLabel"
-        ]
-        otherOptions.forEach((option) => {
-            document.getElementById(option).style.display = (e.target.checked) ? 'none' : "inline-block";
-        })
-    })
-
-    document.getElementById("anyRoundTime").addEventListener("change", (e) => {
-        document.getElementById("roundTime").style.display = (e.target.checked) ? 'none' : "inline-block";
-    })
-
-    document.getElementById("anyRoundCount").addEventListener("change", (e) => {
-        document.getElementById("roundCount").style.display = (e.target.checked) ? 'none' : "inline-block";
-    })
+    var events = await getEvents();
+    new Stats(events);
 }
-
 
 document.addEventListener('DOMContentLoaded', populate);

@@ -1,10 +1,10 @@
 {
     "manifest_version": 3,
-    "name": "Geoguessr Stats",
-    "version": "0.0.5",
-    "description": "Collect your party geoguessr games.",
+    "name": "GeoGuessr Stats",
+    "version": "0.0.6",
+    "description": "Collect records of your party GeoGuessr games.",
     "action": {
-        "default_title": "Geoguessr Stats"
+        "default_title": "GeoGuessr Stats"
     },
     "browser_specific_settings": {
         "gecko": {

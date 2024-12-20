@@ -9,13 +9,16 @@
 </head>
 
 <body>
-    <button id="exportButton">Export Data</button>
-    <div style="display: block;">
-        <button id="importButton" disabled>Import Data</button>
-        <input type="file" id="importFileInput" accept=".json,.jsonl">
+    <div id="exportImport">
+        <button id="exportButton">Export Data</button>
+        <div style="display: block;">
+            <button id="importButton" disabled>Import Data</button>
+            <input type="file" id="importFileInput" accept=".json,.jsonl">
+        </div>
     </div>
+    <hr>
     <div id="statsFilters">
-        <h2>Map filters</h2>
+        <h2 id="topScoreHeader">Top score</h2>
         <div class="statsFilter">
             <span>Timeframe</span>
             <select id="timeFrame">
@@ -62,23 +65,23 @@
         </div>
     </div>
     <div id="topScore">
-        <h2 id="topScoreHeader">Top score</h2>
-        <ul class="scoreList"></ul>
+        <ol id="scoreList"></ol>
     </div>
     <hr>
-    <details>
-        <summary>Last 15 events</summary>
-        <table id="eventsTable">
-            <thead>
-                <tr>
-                    <th>Row</th>
-                </tr>
-            </thead>
-            <tbody id="eventsTableBody">
-            </tbody>
-        </table>
-    </details>
-    <script src="events.js">
+    <h2>Last 10 events</h2>
+    <p id="eventsStartPlaying">Start playing GeoGuessr party games to begin collecting data</p>
+    <table id="eventsTable" style="visibility: hidden;">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Timestamp</th>
+                <th>Data</th>
+            </tr>
+        </thead>
+        <tbody id="eventsTableBody">
+        </tbody>
+    </table>
+    <script src="events.js">    
     </script>
 </body>
 

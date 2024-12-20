@@ -1,4 +1,3 @@
-console.log("background.js");
 chrome.action.onClicked.addListener((message) => {
     chrome.tabs.create({
         url: 'events.html'
@@ -69,13 +68,5 @@ chrome.runtime.onMessage.addListener((message) => {
     let data = JSON.parse(message.data);
     if (data["code"] == "BullseyeGuess")
         return
-    let to_save = {
-        "code": data["code"],
-        "timestamp": data["timestamp"],
-        "data": data
-    }
-    console.log(to_save);
-    saveData(to_save);
-
-    console.log("ws: data saved", message);
+    saveData(data);
 });
