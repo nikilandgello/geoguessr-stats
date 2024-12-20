@@ -72,6 +72,13 @@ async function importData(file) {
     }
 }
 
+function removeOptions(selectElement) {
+    var i, L = selectElement.options.length - 1;
+    for (i = L; i >= 0; i--) {
+        selectElement.remove(i);
+    }
+}
+
 class Stats {
     constructor(events) {
         this.events = events;
@@ -90,7 +97,7 @@ class Stats {
 
         this.addFilterEventListeners();
         this.addEventListeners();
-       
+
         this.update();
     }
 
@@ -203,6 +210,8 @@ class Stats {
 
     addMapsSelectOptions(maps) {
         const mapSelect = document.getElementById("mapSelect");
+        removeOptions(mapSelect);
+        mapSelect.options[0] = new Option("All", "All");
 
         let popularMaps = {
             "57357d9f77abe957e8cfd10f": "Dumb test",
@@ -271,6 +280,8 @@ class Stats {
 
     addPlayersSelectOptions() {
         var select = document.getElementById("playerSelect");
+        removeOptions(select);
+        select.options[0] = new Option("All", "All");
         for (let player of this.players)
             select.options[select.options.length] = new Option(player, player);
         select.addEventListener("change", (e) => {
