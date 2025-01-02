@@ -84,7 +84,7 @@ class Stats {
         this.events = events;
 
         this.timeFrame = "allTime";
-        this.map = "world";
+        this.map = "All";
         this.player = "All";
         this.roundCount = 5;
         this.roundTime = 90;
@@ -214,21 +214,32 @@ class Stats {
         mapSelect.options[0] = new Option("All", "All");
 
         let popularMaps = {
-            "57357d9f77abe957e8cfd10f": "Dumb test",
-            "57357d9f77abe957e8cfd15f": "Dumb test",
-            "62a44b22040f04bd36e8a914": "A Community World",
-            "5d0ce72c8b19a91fe05aa7a8": "Flags of the World",
-            "56f28536148a781b143b0c3b": "European stadiums",
-            "5cfda2c9bc79e16dd866104d": "I Saw The Sign 2.0",
-            "5b0d907bfaa4cf3ce43bc6b1": "500 000 lieux en France métropolitaine !",
-            "56e45886dc7cd6a164e861ac": "US Cities",
-            "5d374dc141d2a43c1cd4527b": "GeoDetective",
-            "60de2a8a81b92c00010f29e1": "The 198 Capitals Of The World",
-            "60de2a8a81b92c00015f29e1": "The 198 Capitals Of The World",
-            "5d73f83d82777cb5781464f2": "A Balanced World",
-            "5dbaf08ed0d2a478444d2e8e": "AI Generated World",
-            "5cd30a0d17e6fc441ceda867": "An Extraordinary World",
-            "6029991c5048850001d572a9": "A Pinpointable World"
+            '57357d9f77abe957e8cfd15f': 'Dumb test',
+            '62a44b22040f04bd36e8a914': 'A Community World',
+            '5d0ce72c8b19a91fe05aa7a8': 'Flags of the World',
+            '56f28536148a781b143b0c3b': 'European stadiums',
+            '5cfda2c9bc79e16dd866104d': 'I Saw The Sign 2.0',
+            '5b0d907bfaa4cf3ce43bc6b1': '500 000 lieux en France métropolitaine !',
+            '56e45886dc7cd6a164e861ac': 'US Cities',
+            '5d374dc141d2a43c1cd4527b': 'GeoDetective',
+            '60de2a8a81b92c00015f29e1': 'The 198 Capitals Of The World',
+            '5d73f83d82777cb5781464f2': 'A Balanced World',
+            '5dbaf08ed0d2a478444d2e8e': 'AI Generated World',
+            '6029991c5048850001d572a9': 'A Pinpointable World',
+            '5cd30a0d17e6fc441ceda867': 'An Extraordinary World',
+            '6078c830e945e900015f4a64': 'A Learning World',
+            '6089bfcff6a0770001f645dd': 'An Arbitrary World',
+            '5754651a00a27f6f482a2a3d': "Where's that Mcdonald's?",
+            '5bbb74ce2c01735208560cf6': 'World Cities',
+            '5b0a80f8596695b708122809': 'An Improved World',
+            '59e940ed39d855c868104b32': 'GeoBettr World - Replayable',
+            '5ed59e1f375e6a6a68a2d227': 'All the Wetherspoons',
+            '5eb5ea048734a02c543f2ae1': 'La Diversité Française ',
+            '65c86935d327035509fd616f': 'A Rainbolt World',
+            '61a1846aee665b00016680ce': 'Fun with Flags!',
+            '5fa381d0e27b4900014e0732': 'Interesting Photospheres in Obscure Countries',
+            '57357d9f77abe957e8cfd10f': 'Dumb test',
+            '60de2a8a81b92c00010f29e1': 'The 198 Capitals Of The World'
         }
 
         for (let map of maps) {
@@ -236,7 +247,7 @@ class Stats {
             if (map in popularMaps)
                 option = new Option(popularMaps[map], map);
             else if (map == "world")
-                option = new Option(map, map, true, true);
+                option = new Option(map, map);
             else
                 option = new Option(map, map);
             mapSelect.options[mapSelect.options.length] = option;
@@ -268,7 +279,6 @@ class Stats {
         var players = Array.from(players).map(([name, value]) => ({ name, value }))
         players = players.sort((a, b) => b.value - a.value);
 
-        players = players.slice(0, 10);
         var result = [];
 
         players.forEach(player => {

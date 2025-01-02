@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "GeoGuessr Stats",
-    "version": "0.0.8",
+    "version": "0.1.0",
     "description": "Collect records of your party GeoGuessr games.",
     "action": {
         "default_title": "GeoGuessr Stats"
