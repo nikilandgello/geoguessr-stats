@@ -1,0 +1,245 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GeoGuessr Stats</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="container">
+      <nav class="navigation">
+        <a href="#" id="today-link" class="active">Today</a>
+        <a href="#" id="all-time-link">All time</a>
+      </nav>
+      <div class="content-wrapper">
+        <div class="content">
+          <div class="stat-section section">
+            <div class="stat-item">
+              <span class="stat-label">Games Played:</span>
+              <span class="stat-value" id="total-games">...</span>
+            </div>
+
+            <div class="stat-item">
+              <span class="stat-label">Best Guess:</span>
+              <span class="stat-value" id="best-guess">...</span>
+            </div>
+
+            <div class="stat-item">
+              <span class="stat-label">Total Time:</span>
+              <span class="stat-value" id="total-time">...</span>
+            </div>
+          </div>
+
+          <div class="win-loss-section section">
+            <h4>Win / Loss</h4>
+            <div class="chart-container">
+              <div class="legend">
+                <div>
+                  <span class="legend-color win"></span>
+                  Win:
+                  <span id="win-count"></span>
+                </div>
+                <div>
+                  <span class="legend-color loss"></span>
+                  Loss:
+                  <span id="loss-count"></span>
+                </div>
+              </div>
+              <div class="svg-chart-wrapper" id="win-loss-chart-wrapper">
+                <svg
+                  class="win-loss-svg-chart"
+                  width="80"
+                  height="80"
+                  viewBox="0 0 50 50"
+                >
+                  <circle
+                    class="chart-segment loss-segment"
+                    id="loss-segment"
+                    cx="50%"
+                    cy="50%"
+                    r="15.9"
+                    fill="none"
+                    stroke-width="8"
+                  ></circle>
+
+                  <circle
+                    class="chart-segment win-segment"
+                    id="win-segment"
+                    cx="50%"
+                    cy="50%"
+                    r="15.9"
+                    fill="none"
+                    stroke-width="8"
+                  ></circle>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="last-map-section section">
+            <div class="last-map-title">
+              <h4>Last map:</h4>
+              <p id="last-map-name">...</p>
+            </div>
+            <div class="table-container">
+              <table id="last-map-table">
+                <colgroup>
+                  <col style="width: 37.5%" />
+                  <col style="width: 25%" />
+                  <col style="width: 37.5%" />
+                </colgroup>
+                <thead>
+                  <tr id="last-map-header"></tr>
+                </thead>
+                <tbody>
+                  <tr id="last-map-data"></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="no-data">
+        <p class="no-data-text">
+          <span class="no-data-span jumpy-text">
+            <span>D</span><span>i</span><span>s</span><span>c</span
+            ><span>o</span><span>v</span><span>e</span><span>r</span
+            ><span>i</span><span>e</span><span>s</span> <span>a</span
+            ><span>w</span><span>a</span><span>i</span><span>t</span
+            ><span>.</span><span>.</span><span>.</span>
+          </span>
+          <br />Make your first move!
+        </p>
+      </div>
+      <footer>
+        <a href="/events_page/events.html" target="_blank" id="fullStatsLink"
+          >View Full Stats</a
+        >
+      </footer>
+    </div>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GeoGuessr Stats</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="container">
+      <nav class="navigation">
+        <a href="#" id="today-link" class="active">Today</a>
+        <a href="#" id="all-time-link">All time</a>
+      </nav>
+      <div class="content-wrapper">
+        <div class="content">
+          <div class="stat-section section">
+            <div class="stat-item">
+              <span class="stat-label">Games Played:</span>
+              <span class="stat-value" id="total-games">...</span>
+            </div>
+
+            <div class="stat-item">
+              <span class="stat-label">Best Guess:</span>
+              <span class="stat-value" id="best-guess">...</span>
+            </div>
+
+            <div class="stat-item">
+              <span class="stat-label">Total Time:</span>
+              <span class="stat-value" id="total-time">...</span>
+            </div>
+          </div>
+
+          <div class="win-loss-section section">
+            <h4>Win / Loss</h4>
+            <div class="chart-container">
+              <div class="legend">
+                <div>
+                  <span class="legend-color win"></span>
+                  Win:
+                  <span id="win-count">...</span>
+                </div>
+                <div>
+                  <span class="legend-color loss"></span>
+                  Loss:
+                  <span id="loss-count">...</span>
+                </div>
+              </div>
+              <div class="svg-chart-wrapper" id="win-loss-chart-wrapper">
+                <svg
+                  class="win-loss-svg-chart"
+                  width="80"
+                  height="80"
+                  viewBox="0 0 50 50"
+                >
+                  <circle
+                    class="chart-segment loss-segment"
+                    id="loss-segment"
+                    cx="50%"
+                    cy="50%"
+                    r="15.9"
+                    fill="none"
+                    stroke-width="8"
+                  ></circle>
+
+                  <circle
+                    class="chart-segment win-segment"
+                    id="win-segment"
+                    cx="50%"
+                    cy="50%"
+                    r="15.9"
+                    fill="none"
+                    stroke-width="8"
+                  ></circle>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="last-map-section section">
+            <div class="last-map-title">
+              <h4>Last map:</h4>
+              <p id="last-map-name">...</p>
+            </div>
+            <div class="table-container">
+              <table id="last-map-table">
+                <colgroup>
+                  <col style="width: 37.5%" />
+                  <col style="width: 25%" />
+                  <col style="width: 37.5%" />
+                </colgroup>
+                <thead>
+                  <tr id="last-map-header"></tr>
+                </thead>
+                <tbody id="last-map-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="no-data">
+        <p class="no-data-text">
+          <span class="no-data-span jumpy-text">
+            <span>D</span><span>i</span><span>s</span><span>c</span
+            ><span>o</span><span>v</span><span>e</span><span>r</span
+            ><span>i</span><span>e</span><span>s</span> <span>a</span
+            ><span>w</span><span>a</span><span>i</span><span>t</span
+            ><span>.</span><span>.</span><span>.</span>
+          </span>
+          <br />Make your first move!
+        </p>
+      </div>
+      <footer>
+        <a href="/events_page/events.html" target="_blank" id="fullStatsLink"
+          >View Full Stats</a
+        >
+      </footer>
+    </div>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
