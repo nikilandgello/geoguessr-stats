@@ -1,9 +1,36 @@
 window.addEventListener("message", (event) => {
-  if (event.data.type == "websocket_received") {
+  const rawData = event.data.data;
+  const messageType = event.data.type;
+
+  if (!rawData || !messageType) return;
+
+  let parsedData;
+
+  if (typeof rawData === "string") {
+    try {
+      parsedData = JSON.parse(rawData);
+    } catch (error) {
+      console.warn(
+        `ISOLATED: Could not parse ${messageType} data as JSON. Raw data:`,
+        rawData,
+        error
+      );
+      return;
+    }
+  } else {
+    parsedData = rawData;
+  }
+
+  if (messageType == "websocket_received") {
     console.log("ws: passing data to background", event);
     chrome.runtime.sendMessage({
       type: "websocket_passed",
-      data: event.data.data,
+      data: parsedData,
+    });
+  } else if (messageType === "websocket_sent") {
+    chrome.runtime.sendMessage({
+      type: "websocket_sent",
+      data: parsedData,
     });
   }
 });

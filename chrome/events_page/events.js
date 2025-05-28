@@ -147,6 +147,7 @@ class Stats {
       if (event.gameId in gameRoundsMap)
         gameOptions[event.gameId] = event.liveChallenge.state.options;
     }
+    console.log("Game options loaded", gameOptions);
     return gameOptions;
   }
 

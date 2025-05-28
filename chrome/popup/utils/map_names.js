@@ -66,8 +66,26 @@ export const popularMaps = {
 
 export function getMapName(event) {
   if (!event?.liveChallenge?.state?.options) return "Unknown Map";
-  const options = event.liveChallenge.state.options;
-  const slug = options.mapSlug || options.map;
+  const mapSlug = event.liveChallenge.state.options.mapSlug;
+  const mapName = event.liveChallenge.state?.mapName;
 
-  return popularMaps[slug] || slug || "Unknown Map";
+  let slug;
+  if (typeof mapSlug === "string" && mapSlug.trim() !== "") {
+    slug = mapSlug;
+  } else if (typeof mapName === "string" && mapName.trim() !== "") {
+    slug = mapName;
+  } else {
+    slug = "";
+  }
+
+  const displayName = popularMaps[slug];
+  if (displayName) {
+    return displayName;
+  }
+
+  if (typeof slug === "string" && slug.trim() !== "") {
+    return slug;
+  }
+
+  return "Unknown Map";
 }

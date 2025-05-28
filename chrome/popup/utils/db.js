@@ -50,7 +50,56 @@ export async function getEvents() {
       };
     });
   } catch (error) {
-    console.error("Error in getEvents:", error);
-    return Promise.resolve([]);
+    console.error("Error in getEvents:", error.message);
+    throw error;
+  }
+}
+
+//get the current player name from the latest PartyMemberListUpdated event
+export async function getCurrentPlayerName(events) {
+  const partyEvent = events.findLast(
+    (event) => event.code === "PartyMemberListUpdated"
+  );
+
+  if (!partyEvent) return null;
+
+  let playerData;
+  try {
+    playerData = JSON.parse(partyEvent.payload);
+  } catch (e) {
+    console.error("getCurrentPlayerName:", e.message);
+    return null;
+  }
+
+  try {
+    const result = await new Promise((resolve, reject) => {
+      chrome.storage.local.get("currentPlayerId", (data) => {
+        if (chrome.runtime.lastError) {
+          console.error(
+            `[fetchCurrentPlayerNick] Error getting currentPlayerId from storage:`,
+            chrome.runtime.lastError.message
+          );
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve(data.currentPlayerId);
+        }
+      });
+    });
+
+    const storedPlayerId = result;
+
+    if (storedPlayerId) {
+      const foundMember = playerData.members.find(
+        (member) => member.userId === storedPlayerId
+      );
+      return foundMember?.nick || null;
+    }
+    return null;
+  } catch (error) {
+    console.error(
+      "fetchCurrentPlayerNick: Error during storage access for currentPlayerId:",
+      error
+    );
+    return null;
   }
 }

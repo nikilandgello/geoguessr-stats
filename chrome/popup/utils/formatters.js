@@ -33,8 +33,8 @@ export function formatDurationMs(ms) {
 
   const totalSeconds = Math.floor(ms / 1000);
 
-  if (totalSeconds < 60) {
-    return "0m";
+  if (totalSeconds < 60 && totalSeconds > 0) {
+    return "<1m";
   }
 
   const totalMinutes = Math.floor(totalSeconds / 60);

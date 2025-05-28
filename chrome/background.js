@@ -1,3 +1,5 @@
+console.log("[BG] Service Worker STARTED.");
+
 let db;
 
 function openDB() {
@@ -55,10 +57,73 @@ async function saveData(data) {
   }
 }
 
-chrome.runtime.onMessage.addListener((message) => {
-  console.log("ws: received data from content script", message);
+//local storage functions
+function getLocalStorageItem(key, callback) {
+  chrome.storage.local.get(key, (result) => {
+    if (chrome.runtime.lastError) {
+      console.error(
+        `[BG] Error getting ${key} from storage:`,
+        chrome.runtime.lastError.message
+      );
+      callback(undefined);
+      return;
+    }
 
-  let data = JSON.parse(message.data);
-  if (data["code"] == "BullseyeGuess") return;
-  saveData(data);
+    callback(result[key]);
+  });
+}
+
+function setLocalStorageItem(itemsToSet, callback) {
+  chrome.storage.local.set(itemsToSet, () => {
+    if (chrome.runtime.lastError) {
+      console.error(
+        `[BG] Error setting items in storage:`,
+        itemsToSet,
+        chrome.runtime.lastError.message
+      );
+      if (callback) {
+        callback(chrome.runtime.lastError);
+      }
+      return;
+    }
+
+    if (callback) {
+      callback(null);
+    }
+  });
+}
+
+//save the current player ID in local storage if it is not already set
+function updatePlayerIdIfNeeded(incomingPlayerId) {
+  if (!incomingPlayerId) return;
+
+  getLocalStorageItem("currentPlayerId", (storedPlayerId) => {
+    if (storedPlayerId === incomingPlayerId) {
+      console.log(
+        `[BG] Player ID is already set to ${incomingPlayerId}. No update needed.`
+      );
+      return;
+    }
+    setLocalStorageItem({ currentPlayerId: incomingPlayerId });
+  });
+}
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.data?.code === "HeartBeat") return;
+
+  if (message.type === "websocket_passed") {
+    console.log("[BG] websocket_passed", message.data);
+
+    const data = message.data;
+    if (data?.code === "BullseyeGuess") return;
+
+    saveData(data);
+  } else if (
+    message.type === "websocket_sent" &&
+    message.data?.code === "SubscribeToLobby"
+  ) {
+    const incomingPlayerId = message.data?.playerId;
+
+    updatePlayerIdIfNeeded(incomingPlayerId);
+  }
 });
