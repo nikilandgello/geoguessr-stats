@@ -1,5 +1,3 @@
-console.log("[BG] Service Worker STARTED.");
-
 let db;
 
 function openDB() {
