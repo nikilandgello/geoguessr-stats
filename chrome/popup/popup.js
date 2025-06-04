@@ -18,10 +18,10 @@ class PopupApp {
       bestScoreEl: document.getElementById("best-score"),
       totalTimeEl: document.getElementById("total-time"),
       winCountEl: document.getElementById("win-count"),
-      lossCountEl: document.getElementById("loss-count"),
-      winLossChartWrapperEl: document.getElementById("win-loss-chart-wrapper"),
-      winSegmentEl: document.getElementById("win-segment"),
-      lossSegmentEl: document.getElementById("loss-segment"),
+      // lossCountEl: document.getElementById("loss-count"),
+      // winLossChartWrapperEl: document.getElementById("win-loss-chart-wrapper"),
+      // winSegmentEl: document.getElementById("win-segment"),
+      // lossSegmentEl: document.getElementById("loss-segment"),
       lastMapNameEl: document.getElementById("last-map-name"),
       lastMapHeaderEl: document.getElementById("last-map-header"),
       lastMapTableBodyEl: document.getElementById("last-map-table-body"),
@@ -73,7 +73,7 @@ class PopupApp {
       this.statsRenderer.setConfig(this.currentPlayerNick, this.timeFrame);
 
       this.statsRenderer.populateGeneralStats(statsData);
-      this.statsRenderer.populateWinLossChart(statsData);
+      // this.statsRenderer.populateWinLossChart(statsData);
       this.statsRenderer.populateLastGame(statsData);
       this.statsRenderer.updateActiveLink();
 

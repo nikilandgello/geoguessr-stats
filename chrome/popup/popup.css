@@ -23,7 +23,7 @@ body {
 }
 
 .container {
-  padding: 15px 10px;
+  padding: 20px 10px;
   height: 470px;
   border-radius: 20px;
   background: linear-gradient(
@@ -106,8 +106,62 @@ body {
   font-weight: 600;
 }
 
+.win-block {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.stat-win {
+  display: inline-block;
+  position: relative;
+  padding: 5px 0;
+  align-items: center;
+  cursor: help;
+}
+
+.stat-win::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(100% + 5px);
+
+  background-color: var(--background-accent);
+  color: var(--color-white-80);
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  white-space: nowrap;
+  z-index: 10;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.stat-win:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.stat-value {
+  margin-left: 5px;
+  vertical-align: super;
+}
+
+.fire-icon {
+  fill: rgb(221, 112, 23);
+}
+
+.trophy-icon {
+  fill: rgb(255, 215, 0);
+}
+
 /**WIN/LOST**/
-.win-loss-section {
+/* .win-loss-section {
   text-align: center;
   padding-bottom: 5px;
 }
@@ -121,10 +175,10 @@ body {
   align-items: center;
   justify-content: center;
   gap: 20px;
-}
+} */
 
 /*legend*/
-.legend {
+/* .legend {
   text-align: left;
   font-size: 14px;
 }
@@ -150,10 +204,10 @@ body {
 }
 .legend-color.loss {
   background-color: var(--color-red-element);
-}
+} */
 
 /*SVG Diagramma*/
-.svg-chart-wrapper {
+/* .svg-chart-wrapper {
   position: relative;
   width: 90px;
   height: 90px;
@@ -198,10 +252,12 @@ body {
 
 .svg-chart-wrapper.no-data .win-loss-svg-chart {
   display: none;
-}
+} */
+
+/**LAST MAPS**/
 
 .last-map-section {
-  padding-top: 5px;
+  padding-top: 0;
 }
 
 .last-map-title {
@@ -270,7 +326,7 @@ footer {
   bottom: 25px;
 }
 
-footer a {
+footer #fullStatsLink {
   display: inline-block;
   font-family: var(--font-family);
   color: white;
@@ -287,7 +343,7 @@ footer a {
   transition: 0.3s ease;
 }
 
-footer a:hover {
+footer #fullStatsLink:hover {
   transform: scale(1.05);
   background: linear-gradient(
     var(--lite-green-active),
@@ -295,6 +351,40 @@ footer a:hover {
   );
   color: var(--dark-green-button);
 }
+
+.feedback {
+  display: block;
+  margin-top: 10px;
+
+  color: var(--color-white-80);
+  font-size: 12px;
+  font-weight: 600;
+  position: relative;
+
+  transition: color 0.3s ease;
+}
+
+.feedback::after {
+  content: " ";
+  position: absolute;
+  top: 16px;
+  left: 34%;
+  width: 32%;
+  height: 1px;
+  background-color: var(--color-white-80);
+
+  transition: color 0.3s ease;
+}
+
+.feedback:hover {
+  color: var(--lite-green-active);
+}
+
+.feedback:hover::after {
+  background-color: var(--lite-green-active);
+}
+
+/**NO DATA AND ERROR MESSAGES**/
 
 .no-data {
   max-width: 250px;

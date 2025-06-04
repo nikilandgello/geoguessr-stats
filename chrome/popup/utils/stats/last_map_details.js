@@ -40,7 +40,7 @@ export function lastMapDetails(
       actualLastMapName = getMapName(gameEventForMapName);
     }
 
-    for (const gameEvent of gamesOnThisMapEvents.slice(0, 2)) {
+    for (const gameEvent of gamesOnThisMapEvents.slice(0, 3)) {
       const gameId = gameEvent.gameId;
       const gameTimestamp = new Date(gameEvent.timestamp);
 

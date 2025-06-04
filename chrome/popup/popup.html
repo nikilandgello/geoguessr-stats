@@ -29,9 +29,34 @@
               <span class="stat-label">Total Time:</span>
               <span class="stat-value" id="total-time">...</span>
             </div>
+
+            <div class="win-block">
+              <div class="stat-win" data-tooltip="Total wins!">
+                <svg class="trophy-icon" width="30" height="30">
+                  <use href="../assets/icons/trophy.svg"></use>
+                </svg>
+                <span class="stat-value" id="win-count">...</span>
+              </div>
+              <div class="stat-win" data-tooltip="Win streak!">
+                <svg class="fire-icon" width="30" height="30">
+                  <use href="../assets/icons/fire.svg"></use>
+                </svg>
+                <span class="stat-value" id="win-streak">...</span>
+              </div>
+            </div>
           </div>
 
-          <div class="win-loss-section section">
+          <!-- <div class="win-section section">
+            <div class="stat-win-section">
+              <span class="stat-label">Win:</span>
+              <span class="stat-value" id="win-count">...</span>
+            </div>
+            <div class="stat-win-section">
+              <span class="stat-label">Win Streak:</span>
+              <span class="stat-value" id="win-streak">...</span>
+            </div>
+          </div> -->
+          <!-- <div class="win-loss-section section">
             <h4>Win / Loss</h4>
             <div class="chart-container">
               <div class="legend">
@@ -75,9 +100,7 @@
                 </svg>
               </div>
             </div>
-          </div>
-
-          <div></div>
+          </div> -->
 
           <div class="last-map-section section">
             <div class="last-map-title">
@@ -116,6 +139,12 @@
       <footer>
         <a href="/events_page/events.html" target="_blank" id="fullStatsLink"
           >View Full Stats</a
+        >
+        <a
+          href="https://forms.gle/pfvotHtUj3RhaRXW9"
+          target="_blank"
+          class="feedback"
+          >Leave Feedback</a
         >
       </footer>
     </div>

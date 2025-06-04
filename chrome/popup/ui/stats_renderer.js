@@ -33,37 +33,38 @@ export class StatsRenderer {
     this.dom.totalGamesEl.textContent = stats.totalGames ?? "0";
     this.dom.bestScoreEl.textContent = stats.bestScore ?? "-";
     this.dom.totalTimeEl.textContent = stats.totalTime ?? "-";
-  }
-
-  populateWinLossChart(stats) {
     this.dom.winCountEl.textContent = stats.wins ?? "0";
-    this.dom.lossCountEl.textContent = stats.losses ?? "0";
-
-    const totalPlayed = stats.totalGames ?? 0;
-    const radius = this.dom.winSegmentEl
-      ? parseFloat(this.dom.winSegmentEl.getAttribute("r"))
-      : 0;
-    const circumference = 2 * Math.PI * radius;
-
-    const winPercent = (stats.wins ?? 0) / totalPlayed;
-    const lossPercent = (stats.losses ?? 0) / totalPlayed;
-
-    const winSegmentLength = winPercent * circumference;
-    const lossSegmentLength = lossPercent * circumference;
-
-    this.dom.lossSegmentEl.style.strokeDasharray = `${lossSegmentLength} ${circumference}`;
-    this.dom.lossSegmentEl.style.strokeDashoffset = "0";
-
-    this.dom.winSegmentEl.style.strokeDasharray = `${winSegmentLength} ${circumference}`;
-    this.dom.winSegmentEl.style.strokeDashoffset = `${-lossSegmentLength}`;
-
-    if (winPercent === 1) {
-      this.dom.lossSegmentEl.style.strokeDasharray = `0 ${circumference}`;
-      this.dom.winSegmentEl.style.strokeDashoffset = "0";
-    } else if (lossPercent === 1) {
-      this.dom.winSegmentEl.style.strokeDasharray = `0 ${circumference}`;
-    }
   }
+
+  // populateWinLossChart(stats) {
+  //   this.dom.winCountEl.textContent = stats.wins ?? "0";
+  //   this.dom.lossCountEl.textContent = stats.losses ?? "0";
+
+  //   const totalPlayed = stats.totalGames ?? 0;
+  //   const radius = this.dom.winSegmentEl
+  //     ? parseFloat(this.dom.winSegmentEl.getAttribute("r"))
+  //     : 0;
+  //   const circumference = 2 * Math.PI * radius;
+
+  //   const winPercent = (stats.wins ?? 0) / totalPlayed;
+  //   const lossPercent = (stats.losses ?? 0) / totalPlayed;
+
+  //   const winSegmentLength = winPercent * circumference;
+  //   const lossSegmentLength = lossPercent * circumference;
+
+  //   this.dom.lossSegmentEl.style.strokeDasharray = `${lossSegmentLength} ${circumference}`;
+  //   this.dom.lossSegmentEl.style.strokeDashoffset = "0";
+
+  //   this.dom.winSegmentEl.style.strokeDasharray = `${winSegmentLength} ${circumference}`;
+  //   this.dom.winSegmentEl.style.strokeDashoffset = `${-lossSegmentLength}`;
+
+  //   if (winPercent === 1) {
+  //     this.dom.lossSegmentEl.style.strokeDasharray = `0 ${circumference}`;
+  //     this.dom.winSegmentEl.style.strokeDashoffset = "0";
+  //   } else if (lossPercent === 1) {
+  //     this.dom.winSegmentEl.style.strokeDasharray = `0 ${circumference}`;
+  //   }
+  // }
 
   populateLastGame(stats) {
     this.dom.lastMapNameEl.textContent =
