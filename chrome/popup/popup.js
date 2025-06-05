@@ -16,7 +16,6 @@ function setLoadingState(isLoading) {
 
   if (!isLoading) {
     loadingOverlayEl.style.display = "none";
-    contentWrapperEl.style.display = "block";
   }
 }
 
