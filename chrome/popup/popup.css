@@ -160,100 +160,6 @@ body {
   fill: rgb(255, 215, 0);
 }
 
-/**WIN/LOST**/
-/* .win-loss-section {
-  text-align: center;
-  padding-bottom: 5px;
-}
-
-.win-loss-section h4 {
-  margin-bottom: 5px;
-}
-
-.chart-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-} */
-
-/*legend*/
-/* .legend {
-  text-align: left;
-  font-size: 14px;
-}
-
-.legend div {
-  margin-bottom: 10px;
-}
-
-.legend div:last-child {
-  margin-bottom: 0;
-}
-
-.legend-color {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  margin-right: 8px;
-  border-radius: 3px;
-}
-
-.legend-color.win {
-  background-color: var(--color-green-element);
-}
-.legend-color.loss {
-  background-color: var(--color-red-element);
-} */
-
-/*SVG Diagramma*/
-/* .svg-chart-wrapper {
-  position: relative;
-  width: 90px;
-  height: 90px;
-  flex-shrink: 0;
-}
-
-.win-loss-svg-chart {
-  display: block;
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-
-.chart-segment {
-  fill: none;
-  cursor: pointer;
-  stroke-linecap: butt;
-  stroke-width: 10;
-
-  transition: stroke-dasharray 0.6s ease, stroke-dashoffset 0.6s ease,
-    stroke-width 0.6s ease, opacity 0.6s ease;
-  animation-name: render;
-  animation-duration: 0.6s;
-  animation-timing-function: ease;
-  transition-property: all;
-  transition-duration: 0.6s;
-}
-
-.chart-segment:hover,
-.hovered {
-  opacity: 0.8;
-  stroke-width: 12;
-}
-
-.win-segment {
-  stroke: var(--color-green-element);
-}
-
-.loss-segment {
-  stroke: var(--color-red-element);
-}
-
-.svg-chart-wrapper.no-data .win-loss-svg-chart {
-  display: none;
-} */
-
 /**LAST MAPS**/
 
 .last-map-section {
@@ -319,14 +225,14 @@ body {
 
 /**FOOTER**/
 
-footer {
+.footer-text {
   position: absolute;
   width: 100%;
   left: 0px;
   bottom: 25px;
 }
 
-footer #fullStatsLink {
+#fullStatsLink {
   display: inline-block;
   font-family: var(--font-family);
   color: white;
@@ -343,7 +249,7 @@ footer #fullStatsLink {
   transition: 0.3s ease;
 }
 
-footer #fullStatsLink:hover {
+#fullStatsLink:hover {
   transform: scale(1.05);
   background: linear-gradient(
     var(--lite-green-active),
@@ -480,4 +386,32 @@ footer #fullStatsLink:hover {
 }
 .jumpy-text span:nth-child(19) {
   animation-delay: 0.9s;
+}
+
+/** LOADING **/
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.loading-spinner-container {
+  text-align: center;
+}
+
+.spinner {
+  border: 7px solid var(--container-overlay-dark);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border-left-color: var(--background-accent);
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
 }

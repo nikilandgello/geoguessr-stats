@@ -3,6 +3,23 @@ import { StatsCalculator } from "./utils/stats/calculator.js";
 import { StatsRenderer } from "./ui/stats_renderer.js";
 import { displayGlobalErrorUI } from "./ui/error_display.js";
 
+function setLoadingState(isLoading) {
+  const loadingOverlayEl = document.getElementById("loading-overlay");
+  const contentWrapperEl = document.getElementById("content-wrapper");
+  const noDataContainerEl = document.getElementById("no-data");
+
+  if (isLoading) {
+    loadingOverlayEl.style.display = "flex";
+    contentWrapperEl.style.display = "none";
+    noDataContainerEl.style.display = "none";
+  }
+
+  if (!isLoading) {
+    loadingOverlayEl.style.display = "none";
+    contentWrapperEl.style.display = "block";
+  }
+}
+
 class PopupApp {
   constructor(initialEvents, currentPlayerNick) {
     this.events = initialEvents || [];
@@ -18,10 +35,6 @@ class PopupApp {
       bestScoreEl: document.getElementById("best-score"),
       totalTimeEl: document.getElementById("total-time"),
       winCountEl: document.getElementById("win-count"),
-      // lossCountEl: document.getElementById("loss-count"),
-      // winLossChartWrapperEl: document.getElementById("win-loss-chart-wrapper"),
-      // winSegmentEl: document.getElementById("win-segment"),
-      // lossSegmentEl: document.getElementById("loss-segment"),
       lastMapNameEl: document.getElementById("last-map-name"),
       lastMapHeaderEl: document.getElementById("last-map-header"),
       lastMapTableBodyEl: document.getElementById("last-map-table-body"),
@@ -73,7 +86,6 @@ class PopupApp {
       this.statsRenderer.setConfig(this.currentPlayerNick, this.timeFrame);
 
       this.statsRenderer.populateGeneralStats(statsData);
-      // this.statsRenderer.populateWinLossChart(statsData);
       this.statsRenderer.populateLastGame(statsData);
       this.statsRenderer.updateActiveLink();
 
@@ -93,6 +105,7 @@ class PopupApp {
 }
 
 async function initializePopup() {
+  setLoadingState(true);
   try {
     const events = await getEvents();
     const playerNick = await getCurrentPlayerName(events);
@@ -102,7 +115,10 @@ async function initializePopup() {
       "initializePopup: Failed to initialize popup due to an error:",
       error
     );
+    setLoadingState(false);
     displayGlobalErrorUI();
+  } finally {
+    setLoadingState(false);
   }
 }
 

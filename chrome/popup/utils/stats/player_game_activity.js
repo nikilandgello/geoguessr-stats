@@ -27,25 +27,28 @@ export function playerGameActivity(
 
     //Win or Loss
     const playerScoreData = gameData.get(currentPlayerName);
-    let playerScore = playerScoreData?.totalScore;
 
-    let isPlayerWinnerInThisGame = true;
+    if (playerScoreData) {
+      let playerScore = playerScoreData?.totalScore;
 
-    for (const [otherPlayer, otherPlayerData] of gameData.entries()) {
-      if (otherPlayer !== currentPlayerName) {
-        if (otherPlayerData.totalScore > playerScore) {
-          isPlayerWinnerInThisGame = false;
-          break;
+      let isPlayerWinnerInThisGame = true;
+
+      for (const [otherPlayer, otherPlayerData] of gameData.entries()) {
+        if (otherPlayer !== currentPlayerName) {
+          if (otherPlayerData.totalScore > playerScore) {
+            isPlayerWinnerInThisGame = false;
+            break;
+          }
         }
       }
-    }
 
-    if (isPlayerWinnerInThisGame) {
-      playerWins++;
-      playerScoreData.result = "Win";
-    } else {
-      playerLosses++;
-      playerScoreData.result = "Loss";
+      if (isPlayerWinnerInThisGame) {
+        playerWins++;
+        playerScoreData.result = "Win";
+      } else {
+        playerLosses++;
+        playerScoreData.result = "Loss";
+      }
     }
   }
 
