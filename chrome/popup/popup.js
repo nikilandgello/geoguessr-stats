@@ -34,6 +34,8 @@ class PopupApp {
       bestScoreEl: document.getElementById("best-score"),
       totalTimeEl: document.getElementById("total-time"),
       winCountEl: document.getElementById("win-count"),
+      winStreakEl: document.getElementById("win-streak"),
+      fireIconEl: document.getElementById("fire-icon"),
       lastMapNameEl: document.getElementById("last-map-name"),
       lastMapHeaderEl: document.getElementById("last-map-header"),
       lastMapTableBodyEl: document.getElementById("last-map-table-body"),

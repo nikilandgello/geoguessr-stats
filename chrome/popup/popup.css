@@ -120,12 +120,13 @@ body {
   cursor: help;
 }
 
+.table-container::after,
 .stat-win::after {
   content: attr(data-tooltip);
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  bottom: calc(100% + 5px);
+  bottom: 40px;
 
   background-color: var(--background-accent);
   color: var(--color-white-80);
@@ -142,12 +143,20 @@ body {
   transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
 }
 
+.table-container::after {
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 220px;
+}
+
+.table-container:hover::after,
 .stat-win:hover::after {
   opacity: 1;
   visibility: visible;
 }
 
-.stat-value {
+.stat-win .stat-value {
+  font-size: 16px;
   margin-left: 5px;
   vertical-align: super;
 }

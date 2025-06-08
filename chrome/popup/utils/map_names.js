@@ -56,6 +56,7 @@ export const popularMaps = {
   "5d374dc141d2a43c1cd4527b": "GeoDetective",
   "5dbaf08ed0d2a478444d2e8e": "AI Generated World",
   "6284d140132039d9a7f1e265": "Urban Hell",
+  "6737723f1207048de469c169": "A Diverse World",
 
   "5b0d907bfaa4cf3ce43bc6b1": "500 000 lieux en France métropolitaine !",
   "5eb5ea048734a02c543f2ae1": "La Diversité Française ",
