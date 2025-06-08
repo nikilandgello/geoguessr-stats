@@ -23,7 +23,7 @@ body {
 }
 
 .container {
-  padding: 15px 10px;
+  padding: 20px 10px;
   height: 470px;
   border-radius: 20px;
   background: linear-gradient(
@@ -106,102 +106,73 @@ body {
   font-weight: 600;
 }
 
-/**WIN/LOST**/
-.win-loss-section {
-  text-align: center;
-  padding-bottom: 5px;
-}
-
-.win-loss-section h4 {
-  margin-bottom: 5px;
-}
-
-.chart-container {
+.win-block {
+  margin-top: 15px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
+  justify-content: space-around;
 }
 
-/*legend*/
-.legend {
-  text-align: left;
-  font-size: 14px;
-}
-
-.legend div {
-  margin-bottom: 10px;
-}
-
-.legend div:last-child {
-  margin-bottom: 0;
-}
-
-.legend-color {
+.stat-win {
   display: inline-block;
-  width: 12px;
-  height: 12px;
-  margin-right: 8px;
-  border-radius: 3px;
-}
-
-.legend-color.win {
-  background-color: var(--color-green-element);
-}
-.legend-color.loss {
-  background-color: var(--color-red-element);
-}
-
-/*SVG Diagramma*/
-.svg-chart-wrapper {
   position: relative;
-  width: 90px;
-  height: 90px;
-  flex-shrink: 0;
+  padding: 5px 0;
+  align-items: center;
+  cursor: help;
 }
 
-.win-loss-svg-chart {
-  display: block;
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
+.table-container::after,
+.stat-win::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 40px;
+
+  background-color: var(--background-accent);
+  color: var(--color-white-80);
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  white-space: nowrap;
+  z-index: 10;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
 }
 
-.chart-segment {
-  fill: none;
-  cursor: pointer;
-  stroke-linecap: butt;
-  stroke-width: 10;
-
-  transition: stroke-dasharray 0.6s ease, stroke-dashoffset 0.6s ease,
-    stroke-width 0.6s ease, opacity 0.6s ease;
-  animation-name: render;
-  animation-duration: 0.6s;
-  animation-timing-function: ease;
-  transition-property: all;
-  transition-duration: 0.6s;
+.table-container::after {
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 220px;
 }
 
-.chart-segment:hover,
-.hovered {
-  opacity: 0.8;
-  stroke-width: 12;
+.table-container:hover::after,
+.stat-win:hover::after {
+  opacity: 1;
+  visibility: visible;
 }
 
-.win-segment {
-  stroke: var(--color-green-element);
+.stat-win .stat-value {
+  font-size: 16px;
+  margin-left: 5px;
+  vertical-align: super;
 }
 
-.loss-segment {
-  stroke: var(--color-red-element);
+.fire-icon {
+  fill: rgb(221, 112, 23);
 }
 
-.svg-chart-wrapper.no-data .win-loss-svg-chart {
-  display: none;
+.trophy-icon {
+  fill: rgb(255, 215, 0);
 }
+
+/**LAST MAPS**/
 
 .last-map-section {
-  padding-top: 5px;
+  padding-top: 0;
 }
 
 .last-map-title {
@@ -263,14 +234,14 @@ body {
 
 /**FOOTER**/
 
-footer {
+.footer-text {
   position: absolute;
   width: 100%;
   left: 0px;
   bottom: 25px;
 }
 
-footer a {
+#fullStatsLink {
   display: inline-block;
   font-family: var(--font-family);
   color: white;
@@ -287,7 +258,7 @@ footer a {
   transition: 0.3s ease;
 }
 
-footer a:hover {
+#fullStatsLink:hover {
   transform: scale(1.05);
   background: linear-gradient(
     var(--lite-green-active),
@@ -295,6 +266,40 @@ footer a:hover {
   );
   color: var(--dark-green-button);
 }
+
+.feedback {
+  display: block;
+  margin-top: 10px;
+
+  color: var(--color-white-80);
+  font-size: 12px;
+  font-weight: 600;
+  position: relative;
+
+  transition: color 0.3s ease;
+}
+
+.feedback::after {
+  content: " ";
+  position: absolute;
+  top: 16px;
+  left: 34%;
+  width: 32%;
+  height: 1px;
+  background-color: var(--color-white-80);
+
+  transition: color 0.3s ease;
+}
+
+.feedback:hover {
+  color: var(--lite-green-active);
+}
+
+.feedback:hover::after {
+  background-color: var(--lite-green-active);
+}
+
+/**NO DATA AND ERROR MESSAGES**/
 
 .no-data {
   max-width: 250px;
@@ -390,4 +395,32 @@ footer a:hover {
 }
 .jumpy-text span:nth-child(19) {
   animation-delay: 0.9s;
+}
+
+/** LOADING **/
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.loading-spinner-container {
+  text-align: center;
+}
+
+.spinner {
+  border: 7px solid var(--container-overlay-dark);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border-left-color: var(--background-accent);
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
 }

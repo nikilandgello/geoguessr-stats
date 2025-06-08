@@ -18,6 +18,7 @@ export class StatsCalculator {
         totalTime: "-",
         wins: 0,
         losses: 0,
+        winStreak: 0,
         lastGamesOnMap: [],
         actualLastMapName: "-",
       };
@@ -49,15 +50,20 @@ export class StatsCalculator {
       currentPlayerName
     );
 
-    //totalGames, totalTime, wins, losses
-    const { playerWins, playerLosses, playerTotalGames, playerTotalTimeMs } =
-      playerGameActivity(
-        finishedGameIds,
-        gameScoresData,
-        gameStartTimes,
-        gameFinishedTime,
-        currentPlayerName
-      );
+    //totalGames, totalTime, wins, losses, winStreak
+    const {
+      playerWins,
+      playerLosses,
+      playerTotalGames,
+      playerTotalTimeMs,
+      playerWinStreak,
+    } = playerGameActivity(
+      finishedGameIds,
+      gameScoresData,
+      gameStartTimes,
+      gameFinishedTime,
+      currentPlayerName
+    );
 
     //lastGamesOnMap, actualLastMapName
     const { lastGamesOnMapDetails, actualLastMapName } = lastMapDetails(
@@ -79,6 +85,7 @@ export class StatsCalculator {
       totalTime: formattedTotalTimePlayer,
       wins: playerWins,
       losses: playerLosses,
+      winStreak: playerWinStreak,
       lastGamesOnMap: lastGamesOnMapDetails,
       actualLastMapName,
     };
