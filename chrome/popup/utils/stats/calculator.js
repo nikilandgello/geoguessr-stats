@@ -76,7 +76,7 @@ export class StatsCalculator {
 
     const formattedTotalTimePlayer = formatDurationMs(playerTotalTimeMs);
 
-    console.log("calculae: lastGamesOnMapDetails", lastGamesOnMapDetails);
+    console.log("calculate: lastGamesOnMapDetails", lastGamesOnMapDetails);
     console.log("calculate: gameScoresData", gameScoresData);
 
     return {
