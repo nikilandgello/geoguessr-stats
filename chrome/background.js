@@ -1,72 +1,127 @@
-chrome.action.onClicked.addListener((message) => {
-    chrome.tabs.create({
-        url: 'events.html'
-    });
-});
-
 let db;
 
-
 function openDB() {
-    return new Promise((resolve, reject) => {
-        if (db) {
-            resolve(db);
-            return;
-        }
+  return new Promise((resolve, reject) => {
+    if (db) {
+      resolve(db);
+      return;
+    }
 
-        let dbRequest = indexedDB.open("GeoGuessrStats", 1);
+    let dbRequest = indexedDB.open("GeoGuessrStats", 1);
 
-        dbRequest.onupgradeneeded = function (event) {
-            console.log("Database upgrade needed");
-            db = event.target.result;
-            if (!db.objectStoreNames.contains("Events")) {
-                db.createObjectStore("Events", { keyPath: '_id', autoIncrement: true });
-                console.log("Object store 'Events' created");
-            }
-        };
+    dbRequest.onupgradeneeded = function (event) {
+      console.log("Database upgrade needed");
+      db = event.target.result;
+      if (!db.objectStoreNames.contains("Events")) {
+        db.createObjectStore("Events", { keyPath: "_id", autoIncrement: true });
+        console.log("Object store 'Events' created");
+      }
+    };
 
-        dbRequest.onsuccess = function (event) {
-            console.log("Database opened successfully");
-            db = event.target.result;
-            resolve(db);
-        };
+    dbRequest.onsuccess = function (event) {
+      console.log("Database opened successfully");
+      db = event.target.result;
+      resolve(db);
+    };
 
-        dbRequest.onerror = function (event) {
-            console.error("Database error: " + event.target.error);
-            reject("Database error");
-        };
-    });
+    dbRequest.onerror = function (event) {
+      console.error("Database error: " + event.target.error);
+      reject("Database error");
+    };
+  });
 }
 
 async function saveData(data) {
-    // note that only valid JSON objects can be saved
-    try {
-        await openDB();
-        let transaction = db.transaction(["Events"], "readwrite");
-        let store = transaction.objectStore("Events");
-        let request = store.add(data);
+  // note that only valid JSON objects can be saved
+  try {
+    await openDB();
+    let transaction = db.transaction(["Events"], "readwrite");
+    let store = transaction.objectStore("Events");
+    let request = store.add(data);
 
-        return new Promise((resolve, reject) => {
-            request.onsuccess = function (event) {
-                console.log("Data saved successfully with ID:", event.target.result);
-                resolve(event.target.result);
-            };
+    return new Promise((resolve, reject) => {
+      request.onsuccess = function (event) {
+        console.log("Data saved successfully with ID:", event.target.result);
+        resolve(event.target.result);
+      };
 
-            request.onerror = function (event) {
-                console.error("Error saving data:", event.target.error);
-                reject(event.target.error);
-            };
-        });
-    } catch (error) {
-        console.error("Error saving data:", error, data);
+      request.onerror = function (event) {
+        console.error("Error saving data:", event.target.error);
+        reject(event.target.error);
+      };
+    });
+  } catch (error) {
+    console.error("Error saving data:", error, data);
+  }
+}
+
+//local storage functions
+function getLocalStorageItem(key, callback) {
+  chrome.storage.local.get(key, (result) => {
+    if (chrome.runtime.lastError) {
+      console.error(
+        `[BG] Error getting ${key} from storage:`,
+        chrome.runtime.lastError.message
+      );
+      callback(undefined);
+      return;
     }
+
+    callback(result[key]);
+  });
+}
+
+function setLocalStorageItem(itemsToSet, callback) {
+  chrome.storage.local.set(itemsToSet, () => {
+    if (chrome.runtime.lastError) {
+      console.error(
+        `[BG] Error setting items in storage:`,
+        itemsToSet,
+        chrome.runtime.lastError.message
+      );
+      if (callback) {
+        callback(chrome.runtime.lastError);
+      }
+      return;
+    }
+
+    if (callback) {
+      callback(null);
+    }
+  });
+}
+
+//save the current player ID in local storage if it is not already set
+function updatePlayerIdIfNeeded(incomingPlayerId) {
+  if (!incomingPlayerId) return;
+
+  getLocalStorageItem("currentPlayerId", (storedPlayerId) => {
+    if (storedPlayerId === incomingPlayerId) {
+      console.log(
+        `[BG] Player ID is already set to ${incomingPlayerId}. No update needed.`
+      );
+      return;
+    }
+    setLocalStorageItem({ currentPlayerId: incomingPlayerId });
+  });
 }
 
 chrome.runtime.onMessage.addListener((message) => {
-    console.log("ws: received data from content script", message);
+  if (message.data?.code === "HeartBeat") return;
 
-    let data = JSON.parse(message.data);
-    if (data["code"] == "BullseyeGuess")
-        return
+  if (message.type === "websocket_passed") {
+    console.log("[BG] websocket_passed", message.data);
+
+    const data = message.data;
+    if (data?.code === "BullseyeGuess") return;
+
     saveData(data);
+  } else if (
+    message.type === "websocket_sent" &&
+    message.data?.code === "SubscribeToLobby"
+  ) {
+    const incomingPlayerId = message.data?.playerId;
+
+    updatePlayerIdIfNeeded(incomingPlayerId);
+  }
 });

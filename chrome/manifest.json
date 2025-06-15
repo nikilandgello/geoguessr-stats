@@ -1,38 +1,33 @@
 {
-    "manifest_version": 3,
-    "name": "GeoGuessr Stats",
-    "version": "0.1.0",
-    "description": "Collect records of your party GeoGuessr games.",
-    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwcJVF4J2XIbv+uT4I+PIMaFlsepHpDFrpnS8a0YsBa/WWWxPz07zhN0e6wWHHLa1GfJPNCbs0RpCc7edg/g/ufGUftUPeq/1X+uuRsGrEWR8aSDj6MJc2QvSc3GglErAKkmPIpaMd6/cpXXmdN02/3MhqJLWqfHjJ8v8G6mFdwcPa/f/LEejCN/7dab8NMz5Tlh4el5MF1ohSpc7Ay7Q75qzkOn3fBj0bGe+jis6w0hHnW0rsZRQz5fqenASLHr41butH5EgipxfdyKtUTta1z5M4qMzEZYHoPWTW8dduVSq8vo8umxDBFAouyolbyd2dVFBgTiLKOGEVDMLM/MVjwIDAQAB",
-    "action": {
-        "default_title": "GeoGuessr Stats"
+  "manifest_version": 3,
+  "name": "GeoGuessr Stats",
+  "version": "0.1.0",
+  "description": "Collect records of your party GeoGuessr games.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwcJVF4J2XIbv+uT4I+PIMaFlsepHpDFrpnS8a0YsBa/WWWxPz07zhN0e6wWHHLa1GfJPNCbs0RpCc7edg/g/ufGUftUPeq/1X+uuRsGrEWR8aSDj6MJc2QvSc3GglErAKkmPIpaMd6/cpXXmdN02/3MhqJLWqfHjJ8v8G6mFdwcPa/f/LEejCN/7dab8NMz5Tlh4el5MF1ohSpc7Ay7Q75qzkOn3fBj0bGe+jis6w0hHnW0rsZRQz5fqenASLHr41butH5EgipxfdyKtUTta1z5M4qMzEZYHoPWTW8dduVSq8vo8umxDBFAouyolbyd2dVFBgTiLKOGEVDMLM/MVjwIDAQAB",
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "GeoGuessr Stats"
+  },
+  "icons": {
+    "128": "assets/images/icon.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "world": "MAIN",
+      "matches": ["https://www.geoguessr.com/*"],
+      "js": ["content_scripts/content_main.js"],
+      "run_at": "document_start"
     },
-    "icons": {
-        "128": "icon.png"
-    },
-    "background": {
-        "service_worker": "background.js"
-    },
-    "content_scripts": [
-        {
-            "world": "MAIN",
-            "matches": [
-                "https://www.geoguessr.com/*"
-            ],
-            "js": [
-                "content_main.js"
-            ],
-            "run_at": "document_start"
-        },
-        {
-            "world": "ISOLATED",
-            "matches": [
-                "https://www.geoguessr.com/*"
-            ],
-            "js": [
-                "content_isolated.js"
-            ],
-            "run_at": "document_start"
-        }
-    ]
+    {
+      "world": "ISOLATED",
+      "matches": ["https://www.geoguessr.com/*"],
+      "js": ["content_scripts/content_isolated.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "permissions": ["storage", "tabs"],
+  "host_permissions": ["*://*.geoguessr.com/*"]
 }
