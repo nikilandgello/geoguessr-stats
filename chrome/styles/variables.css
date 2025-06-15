@@ -10,7 +10,7 @@
   --color-red-element: #f44336;
 
   --container-overlay-blue: rgba(15, 91, 173, 0.4);
-  --container-overlay-dark: rgba(26, 26, 46, 0.4);
+  --container-overlay-dark: rgba(26, 26, 46, 0.8);
   --shadow-glow-light: rgba(250, 250, 250, 0.05);
 
   --dark-green-button: rgb(35, 113, 26);
