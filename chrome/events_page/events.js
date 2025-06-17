@@ -84,6 +84,21 @@ function removeOptions(selectElement) {
   }
 }
 
+function setLoadingState(isLoading) {
+  const loadingOverlayEl = document.getElementById("loading-overlay");
+  const contentWrapperEl = document.getElementById("content-wrapper");
+
+  if (isLoading) {
+    contentWrapperEl.style.display = "none";
+    loadingOverlayEl.style.display = "flex";
+  }
+
+  if (!isLoading) {
+    loadingOverlayEl.style.display = "none";
+    contentWrapperEl.style.display = "block";
+  }
+}
+
 class Stats {
   constructor(events) {
     this.events = events;
@@ -472,7 +487,8 @@ class Stats {
       row.insertCell(0).textContent = JSON.stringify(event.code);
       row.insertCell(1).textContent = JSON.stringify(event.timestamp);
       let data = document.createElement("textarea");
-      data.textContent = JSON.stringify(event);
+      data.textContent = JSON.stringify(event, null, 2);
+      data.readOnly = true;
       row.insertCell(2).appendChild(data);
     });
   }
@@ -509,8 +525,16 @@ class Stats {
 }
 
 async function populate() {
-  var events = await getEvents();
-  new Stats(events);
+  setLoadingState(true);
+  try {
+    var events = await getEvents();
+    new Stats(events);
+  } catch (error) {
+    console.error("Error populating stats:", error);
+    setLoadingState(false);
+  } finally {
+    setLoadingState(false);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", populate);

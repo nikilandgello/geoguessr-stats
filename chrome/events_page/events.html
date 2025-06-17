@@ -1,88 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GeoGuessr Stats</title>
-    <link rel="stylesheet" href="events.css">
-</head>
+    <link rel="stylesheet" href="events.css" />
+  </head>
 
-<body>
-    <div id="exportImport">
-        <button id="exportButton">Export Data</button>
-        <div style="display: block;">
+  <body>
+    <div id="loading-overlay" class="loading-overlay" style="display: flex">
+      <div class="loading-spinner-container">
+        <div class="spinner"></div>
+      </div>
+    </div>
+
+    <div id="content-wrapper">
+      <header class="section section-header">
+        <div class="container header-container">
+          <div class="logo">
+            <img
+              src="../assets/images/icon.png"
+              width="60px"
+              height="60px"
+              class="icon"
+            />
+            <h1 class="logo-text">GeoGuessr Stats</h1>
+          </div>
+          <div id="exportImport">
+            <button id="exportButton">Export Data</button>
             <button id="importButton" disabled>Import Data</button>
-            <input type="file" id="importFileInput" accept=".json,.jsonl">
+
+            <input type="file" id="importFileInput" accept=".json,.jsonl" />
+          </div>
         </div>
-    </div>
-    <hr>
-    <div id="statsFilters">
-        <h2 id="topScoreHeader">Top score</h2>
-        <div class="statsFilter">
-            <span>Timeframe</span>
-            <select id="timeFrame">
-                <option value="allTime">All Time</option>
-                <option value="today">Today</option>
-            </select>
-        </div>
-        <div class="statsFilter">
-            <span>Map</span>
-            <select id="mapSelect">
-                <option value="All">All</option>
-            </select>
-        </div>
-        <div class="statsFilter">
-            <span>Player</span>
-            <select id="playerSelect">
-                <option value="All">All</option>
-            </select>
-        </div>
-        <div class="statsFilter">
-            <span>Round Count</span>
-            <input type="checkbox" id="anyRoundCount" checked />
-            <label for="anyRoundCount">Any</label>
-            <input style="display: none;" type="number" id="roundCount" value="5" min="1" max="50" />
-        </div>
-        <div class="statsFilter">
-            <span>Round Time</span>
-            <input type="checkbox" id="anyRoundTime" checked />
-            <label for="anyRoundTime">Any</label>
-            <input style="display: none;" type="number" id="roundTime" value="90" min="10" max="600" step="10" />
-        </div>
-        <div class="statsFilter">
-            <span>Map settings</span>
-            <div style="display: block;">
-                <input type="checkbox" id="anyOptions" checked />
-                <label for="anyOptions">Any</label>
-                <input style="display: none;" type="checkbox" id="movingAllowed" checked />
-                <label style="display: none;" for="movingAllowed" id="movingAllowedLabel">Moving Allowed</label>
-                <input style="display: none;" type="checkbox" id="panningAllowed" checked />
-                <label style="display: none;" for="panningAllowed" id="panningAllowedLabel">Panning Allowed</label>
-                <input style="display: none;" type="checkbox" id="zoomingAllowed" checked />
-                <label style="display: none;" for="zoomingAllowed" id="zoomingAllowedLabel">Zooming Allowed</label>
+      </header>
+
+      <section class="section section-top-score">
+        <div class="container top-score-container">
+          <h2 id="topScoreHeader" class="title">Top score</h2>
+
+          <div class="top-score-content">
+            <div id="statsFilters">
+              <div class="statsFilter">
+                <span>Timeframe</span>
+                <select id="timeFrame">
+                  <option value="allTime">All Time</option>
+                  <option value="today">Today</option>
+                </select>
+              </div>
+              <div class="statsFilter">
+                <span>Map</span>
+                <select id="mapSelect">
+                  <option value="All">All</option>
+                </select>
+              </div>
+              <div class="statsFilter">
+                <span>Player</span>
+                <select id="playerSelect">
+                  <option value="All">All</option>
+                </select>
+              </div>
+              <div class="statsFilter">
+                <span>Round Count</span>
+                <input type="checkbox" id="anyRoundCount" checked />
+                <label for="anyRoundCount">Any</label>
+                <input
+                  style="display: none"
+                  type="number"
+                  id="roundCount"
+                  value="5"
+                  min="1"
+                  max="50"
+                />
+              </div>
+              <div class="statsFilter">
+                <span>Round Time</span>
+                <input type="checkbox" id="anyRoundTime" checked />
+                <label for="anyRoundTime">Any</label>
+                <input
+                  style="display: none"
+                  type="number"
+                  id="roundTime"
+                  value="90"
+                  min="10"
+                  max="600"
+                  step="10"
+                />
+              </div>
+              <div class="statsFilter">
+                <span>Map settings</span>
+                <div style="display: block">
+                  <div>
+                    <input type="checkbox" id="anyOptions" checked />
+                    <label for="anyOptions">Any</label>
+                  </div>
+                  <div>
+                    <input
+                      style="display: none"
+                      type="checkbox"
+                      id="movingAllowed"
+                      checked
+                    />
+                    <label
+                      style="display: none"
+                      for="movingAllowed"
+                      id="movingAllowedLabel"
+                      >Moving Allowed</label
+                    >
+                  </div>
+                  <div>
+                    <input
+                      style="display: none"
+                      type="checkbox"
+                      id="panningAllowed"
+                      checked
+                    />
+                    <label
+                      style="display: none"
+                      for="panningAllowed"
+                      id="panningAllowedLabel"
+                      >Panning Allowed</label
+                    >
+                  </div>
+                  <div>
+                    <input
+                      style="display: none"
+                      type="checkbox"
+                      id="zoomingAllowed"
+                      checked
+                    />
+                    <label
+                      style="display: none"
+                      for="zoomingAllowed"
+                      id="zoomingAllowedLabel"
+                      >Zooming Allowed</label
+                    >
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <div id="topScore">
+              <ol id="scoreList"></ol>
+            </div>
+          </div>
         </div>
-    </div>
-    <div id="topScore">
-        <ol id="scoreList"></ol>
-    </div>
-    <hr>
-    <h2>Last 10 events</h2>
-    <p id="eventsStartPlaying">Start playing GeoGuessr party games to begin collecting data</p>
-    <table id="eventsTable" style="visibility: hidden;">
-        <thead>
-            <tr>
+      </section>
+
+      <section class="section section-last-map">
+        <div class="container">
+          <h2 class="title">Last 10 events</h2>
+          <p id="eventsStartPlaying">
+            Start playing GeoGuessr party games to begin collecting data
+          </p>
+          <table id="eventsTable" style="visibility: hidden">
+            <colgroup>
+              <col style="width: 30%" />
+              <col style="width: 30%" />
+              <col style="width: 40%" />
+            </colgroup>
+            <thead>
+              <tr>
                 <th>Code</th>
                 <th>Timestamp</th>
                 <th>Data</th>
-            </tr>
-        </thead>
-        <tbody id="eventsTableBody">
-        </tbody>
-    </table>
-    <script src="events.js">    
-    </script>
-</body>
+              </tr>
+            </thead>
+            <tbody id="eventsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
 
+    <script src="events.js"></script>
+  </body>
 </html>
