@@ -60,7 +60,8 @@ body {
 }
 
 #exportButton,
-#importButton {
+#importButton,
+#loadMoreButton {
   display: inline-block;
   font-family: var(--font-family);
   color: var(--color-white);
@@ -79,7 +80,8 @@ body {
 }
 
 #exportButton:hover,
-#importButton:hover {
+#importButton:hover,
+#loadMoreButton:hover {
   transform: scale(1.05);
   background: linear-gradient(
     var(--lite-green-active),
@@ -112,21 +114,27 @@ body {
 
 .top-score-content {
   display: flex;
+  justify-content: space-between;
   gap: 40px;
-  align-items: flex-start;
-  align-items: center;
+  align-items: stretch;
+  flex-wrap: wrap;
 }
 
-#statsFilters {
-  flex: 0 0 600px;
-}
-
+#statsFilters,
 #topScore {
-  flex-grow: 1;
+  flex: 1 1 45%;
+  min-width: 300px;
 }
 
 .statsFilter {
   margin-bottom: 25px;
+}
+
+#topScore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
 }
 
 .statsFilter:last-child {
@@ -240,17 +248,40 @@ option:checked {
   margin: 0;
 }
 
+.statsFilter span + div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.statsFilter span + div > div {
+  display: block;
+}
+
 /** score list **/
-#scoreList {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
+#scoreListContainer {
+  height: 400px;
+  width: 100%;
+  border-radius: 4px;
+  padding: 10px;
+  background-color: transparent;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+#noDataMessage {
+  font-size: 18px;
+}
+
+#scoreListContainer {
+  display: inline-block;
+  margin-bottom: 25px;
 }
 
 #scoreList li {
   background-color: var(--shadow-glow-light);
   padding: 15px 20px;
-  margin-bottom: 8px;
+  margin-bottom: 25px;
   border-radius: 20px;
   border-left: 3px solid var(--dark-green-default);
   font-family: var(--font-family-second);
@@ -260,6 +291,10 @@ option:checked {
   counter-increment: score-counter;
   display: flex;
   align-items: center;
+}
+
+#scoreList li:last-child {
+  margin-bottom: 0;
 }
 
 #scoreList li::before {
@@ -323,15 +358,19 @@ textarea {
   font-size: 14px;
 }
 
+#scoreListContainer::-webkit-scrollbar,
 textarea::-webkit-scrollbar {
   width: 12px;
 }
 
+#scoreListContainer::-webkit-scrollbar-track,
 textarea::-webkit-scrollbar-track {
   background: transparent;
 }
 
+#scoreListContainer::-webkit-scrollbar-thumb,
 textarea::-webkit-scrollbar-thumb {
+  cursor: pointer;
   background-color: var(--shadow-glow-light);
   border-radius: 10px;
   border: 3px solid var(--container-overlay-dark);
@@ -339,6 +378,7 @@ textarea::-webkit-scrollbar-thumb {
   transition: background-color 0.3s ease;
 }
 
+#scoreListContainer::-webkit-scrollbar-thumb:hover,
 textarea::-webkit-scrollbar-thumb:hover {
   background-color: var(--container-overlay-dark);
 }
@@ -415,19 +455,5 @@ textarea::-webkit-scrollbar-thumb:hover {
     flex-direction: column;
     align-items: stretch;
     gap: 25px;
-  }
-
-  #statsFilters {
-    flex-basis: auto;
-  }
-
-  .statsFilter span + div {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-
-  .statsFilter span + div > div {
-    display: block;
   }
 }

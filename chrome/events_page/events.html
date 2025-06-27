@@ -147,33 +147,16 @@
             </div>
 
             <div id="topScore">
-              <ol id="scoreList"></ol>
+              <p id="noDataMessage" style="display: none">
+                No data found for the selected filters.
+              </p>
+
+              <div id="scoreListContainer">
+                <ol id="scoreList"></ol>
+              </div>
+              <button id="loadMoreButton">Load More</button>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section class="section section-last-map">
-        <div class="container">
-          <h2 class="title">Last 10 events</h2>
-          <p id="eventsStartPlaying">
-            Start playing GeoGuessr party games to begin collecting data
-          </p>
-          <table id="eventsTable" style="visibility: hidden">
-            <colgroup>
-              <col style="width: 30%" />
-              <col style="width: 30%" />
-              <col style="width: 40%" />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Timestamp</th>
-                <th>Data</th>
-              </tr>
-            </thead>
-            <tbody id="eventsTableBody"></tbody>
-          </table>
         </div>
       </section>
     </div>
