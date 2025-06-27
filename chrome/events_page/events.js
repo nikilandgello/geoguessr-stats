@@ -148,6 +148,10 @@ class Stats {
     this.events = events;
     this.filteredEvents = [];
 
+    this.allGameScores = [];
+    this.scoresPerPage = 10;
+    this.currentPage = 1;
+
     this.timeFrame = "allTime";
     this.map = "All";
     this.player = "All";
@@ -178,13 +182,7 @@ class Stats {
     this.players = this.getPlayers();
     this.addPlayersSelectOptions();
 
-    if (this.events.length > 0) {
-      document.getElementById("eventsStartPlaying").style.display = "none";
-      document.getElementById("eventsTable").style.visibility = "visible";
-    }
-
     this.populateTopScore();
-    this.populateTable();
     console.log("Updated");
   }
 
@@ -249,6 +247,11 @@ class Stats {
           this.handleImport(file);
         }
       });
+
+    document.getElementById("loadMoreButton").addEventListener("click", () => {
+      this.currentPage++;
+      this.displayScores();
+    });
 
     document.getElementById("anyOptions").addEventListener("change", (e) => {
       let otherOptions = [
@@ -391,9 +394,9 @@ class Stats {
 
   populateTopScore() {
     var scoreList = document.getElementById("scoreList");
-    while (scoreList.firstChild) {
-      scoreList.removeChild(scoreList.lastChild);
-    }
+
+    this.currentPage = 1;
+    scoreList.innerHTML = "";
 
     var filteredEvents = this.events.filter(
       (event) => event.code == "LiveChallengeLeaderboardUpdate"
@@ -516,33 +519,60 @@ class Stats {
       );
 
     // sort gameScores by totalScore descending
-    gameScores = gameScores.sort((a, b) => b.totalScore - a.totalScore);
-    gameScores = gameScores.slice(0, 5);
+    this.allGameScores = gameScores.sort((a, b) => b.totalScore - a.totalScore);
 
-    // populate topScoreToday div
-    for (var score of gameScores) {
-      let li = document.createElement("li");
-      li.innerText = `${score.playerName}: ${
-        score.totalScore
-      } (${score.date.toLocaleDateString()})`;
-      scoreList.appendChild(li);
-    }
+    this.displayScores();
   }
 
-  populateTable() {
-    const tableBody = document.getElementById("eventsTableBody");
-    tableBody.textContent = "";
-    let eventsSlice = this.events.slice(-10);
-    eventsSlice = eventsSlice.reverse();
-    eventsSlice.forEach((event) => {
-      let row = tableBody.insertRow();
-      row.insertCell(0).textContent = JSON.stringify(event.code);
-      row.insertCell(1).textContent = JSON.stringify(event.timestamp);
-      let data = document.createElement("textarea");
-      data.textContent = JSON.stringify(event, null, 2);
-      data.readOnly = true;
-      row.insertCell(2).appendChild(data);
+  displayScores() {
+    const scoreList = document.getElementById("scoreList");
+    const loadMoreButton = document.getElementById("loadMoreButton");
+    const scoreContainer = document.getElementById("scoreListContainer");
+    const noDataMessage = document.getElementById("noDataMessage");
+
+    if (this.allGameScores.length === 0) {
+      noDataMessage.style.display = "block";
+      scoreContainer.style.display = "none";
+      loadMoreButton.style.display = "none";
+      return;
+    }
+
+    noDataMessage.style.display = "none";
+    scoreContainer.style.display = "block";
+
+    const startIndex = (this.currentPage - 1) * this.scoresPerPage;
+    const endIndex = startIndex + this.scoresPerPage;
+
+    const scoresToShow = this.allGameScores.slice(startIndex, endIndex);
+
+    let firstNewElement = null;
+
+    scoresToShow.forEach((score, index) => {
+      const li = document.createElement("li");
+      const dateString = score.date.toLocaleDateString();
+      li.textContent = `${score.playerName}: ${score.totalScore} (${dateString})`;
+      scoreList.appendChild(li);
+
+      if (index === 0) {
+        firstNewElement = li;
+      }
     });
+
+    if (this.currentPage > 1 && firstNewElement) {
+      const newElementOffset =
+        firstNewElement.offsetTop - scoreContainer.offsetTop;
+
+      scoreContainer.scrollTo({
+        top: newElementOffset,
+        behavior: "smooth",
+      });
+    }
+
+    if (endIndex < this.allGameScores.length) {
+      loadMoreButton.style.display = "block";
+    } else {
+      loadMoreButton.style.display = "none";
+    }
   }
 
   handleImport(file) {
