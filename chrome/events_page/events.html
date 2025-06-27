@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GeoGuessr Stats</title>
+    <link rel="stylesheet" href="../libs/toastify/toastify.min.css" />
     <link rel="stylesheet" href="events.css" />
   </head>
 
@@ -28,9 +29,14 @@
           </div>
           <div id="exportImport">
             <button id="exportButton">Export Data</button>
-            <button id="importButton" disabled>Import Data</button>
+            <button id="importButton">Import Data</button>
 
-            <input type="file" id="importFileInput" accept=".json,.jsonl" />
+            <input
+              type="file"
+              id="importFileInput"
+              accept=".json,.jsonl"
+              style="display: none"
+            />
           </div>
         </div>
       </header>
@@ -172,6 +178,7 @@
       </section>
     </div>
 
+    <script src="../libs/toastify/toastify.js"></script>
     <script src="events.js"></script>
   </body>
 </html>
