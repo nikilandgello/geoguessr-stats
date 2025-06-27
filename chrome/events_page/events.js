@@ -66,13 +66,36 @@ async function importData(file) {
     const transaction = db.transaction(["Events"], "readwrite");
     const store = transaction.objectStore("Events");
 
+    const clearRequest = store.clear();
+
+    await new Promise((resolve, reject) => {
+      clearRequest.onsuccess = () => {
+        console.log("Events store cleared successfully");
+        resolve();
+      };
+      clearRequest.onerror = (event) => {
+        console.error("Error clearing Events store:", event.target.error);
+        reject("Error clearing Events store");
+      };
+    });
+
     for (const event of events) {
       await store.add(event);
     }
 
-    alert("Data imported successfully");
+    await new Promise((resolve, reject) => {
+      transaction.oncomplete = () => {
+        console.log("All events imported successfully");
+        resolve();
+      };
+      transaction.onerror = (event) => {
+        console.error("Error importing events:", event.target.error);
+        reject("Error importing events");
+      };
+    });
   } catch (error) {
     console.error("Error importing data:", error);
+    throw error;
   }
 }
 
@@ -99,9 +122,31 @@ function setLoadingState(isLoading) {
   }
 }
 
+function showToast(text, type = "success", callback) {
+  const options = {
+    text: text,
+    duration: 3000,
+    gravity: "top",
+    position: "center",
+    stopOnFocus: true,
+    callback: callback,
+    close: true,
+  };
+
+  if (type === "success") {
+    options.backgroundColor = "linear-gradient(to right, #00b09b, #96c93d)";
+  } else if (type === "error") {
+    options.backgroundColor = "linear-gradient(to right, #ff5f6d, #ffc371)";
+    options.duration = 5000;
+  }
+
+  Toastify(options).showToast();
+}
+
 class Stats {
   constructor(events) {
     this.events = events;
+    this.filteredEvents = [];
 
     this.timeFrame = "allTime";
     this.map = "All";
@@ -192,12 +237,17 @@ class Stats {
       this.exportToJsonl();
     });
     document.getElementById("importButton").addEventListener("click", (_) => {
-      this.handleImport();
+      document.getElementById("importFileInput").click();
+      this.handleImport;
     });
+
     document
       .getElementById("importFileInput")
-      .addEventListener("change", (_) => {
-        document.getElementById("importButton").disabled = false;
+      .addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          this.handleImport(file);
+        }
       });
 
     document.getElementById("anyOptions").addEventListener("change", (e) => {
@@ -394,6 +444,8 @@ class Stats {
       });
     }
 
+    this.filteredEvents = filteredEvents;
+
     // extract all round scores
     var roundScores = [];
     var nonStandardGames = new Set();
@@ -493,23 +545,86 @@ class Stats {
     });
   }
 
-  handleImport() {
-    const fileInput = document.getElementById("importFileInput");
-    const file = fileInput.files[0];
-
-    if (file) {
-      importData(file).then((updatedEvents) => {
-        if (updatedEvents) {
-          this.update();
-        }
-      });
-    } else {
-      alert("Please select a file to import.");
+  handleImport(file) {
+    if (!file) {
+      return;
     }
+
+    setLoadingState(true);
+
+    importData(file)
+      .then(() => {
+        showToast("Data imported successfully! Reloading...", "success", () =>
+          location.reload()
+        );
+      })
+      .catch((error) => {
+        setLoadingState(false);
+        showToast("Import failed. Check the console for details.", "error");
+        console.error("Import error:", error);
+      });
   }
 
   exportToJsonl() {
-    const jsonlContent = this.events
+    let leaderboardEvents = this.filteredEvents;
+
+    if (this.player && this.player != "All") {
+      leaderboardEvents = leaderboardEvents.filter((event) => {
+        return event.liveChallenge.leaderboards.round.entries.some(
+          (entry) => entry.name === this.player
+        );
+      });
+    }
+
+    const finalGameIds = new Set(
+      leaderboardEvents.map((event) => event.gameId)
+    );
+
+    if (finalGameIds.size === 0) {
+      showToast("No data to export for the selected filters.", "error");
+      return;
+    }
+
+    const gameToPartyMap = new Map();
+    for (const event of this.events) {
+      if (event.gameId && event.topic && event.topic.startsWith("partyv2:")) {
+        const partyId = event.topic.split(":")[1];
+        if (partyId) {
+          gameToPartyMap.set(event.gameId, partyId);
+        }
+      } else if (event.code === "PartyGameStarted" && event.payload) {
+        try {
+          const payloadData = JSON.parse(event.payload);
+          if (payloadData.lobbyId && payloadData.partyId) {
+            gameToPartyMap.set(payloadData.lobbyId, payloadData.partyId);
+          }
+        } catch (e) {}
+      }
+    }
+
+    const finalPartyIds = new Set();
+    for (const gameId of finalGameIds) {
+      if (gameToPartyMap.has(gameId)) {
+        finalPartyIds.add(gameToPartyMap.get(gameId));
+      }
+    }
+
+    const eventsToExport = this.events.filter((event) => {
+      if (finalGameIds.has(event.gameId)) {
+        return true;
+      }
+
+      if (event.topic && event.topic.startsWith("partyv2:")) {
+        const partyId = event.topic.split(":")[1];
+        if (finalPartyIds.has(partyId)) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    const jsonlContent = eventsToExport
       .map((event) => JSON.stringify(event))
       .join("\n");
     const blob = new Blob([jsonlContent], { type: "application/x-jsonlines" });
