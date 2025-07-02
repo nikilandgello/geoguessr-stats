@@ -122,25 +122,35 @@ function setLoadingState(isLoading) {
   }
 }
 
-function showToast(text, type = "success", callback) {
-  const options = {
-    text: text,
-    duration: 3000,
-    gravity: "top",
-    position: "center",
-    stopOnFocus: true,
-    callback: callback,
-    close: true,
-  };
+const toastElement = document.getElementById("customToast");
+const toastMessageElement = document.getElementById("customToastMessage");
+const toastCloseButton = document.getElementById("customToastCloseBtn");
+let toastTimerId = null;
+let toastCallback = null;
 
-  if (type === "success") {
-    options.backgroundColor = "linear-gradient(to right, #00b09b, #96c93d)";
-  } else if (type === "error") {
-    options.backgroundColor = "linear-gradient(to right, #ff5f6d, #ffc371)";
-    options.duration = 5000;
+function finishToast() {
+  toastElement.classList.remove("custom-toast--visible");
+  if (toastTimerId) {
+    clearTimeout(toastTimerId);
+    toastTimerId = null;
   }
+  if (toastCallback) {
+    toastCallback();
+    toastCallback = null; 
+  }
+}
 
-  Toastify(options).showToast();
+function showToast(text, type = "success", callback) {
+  if (toastTimerId) {
+    clearTimeout(toastTimerId);
+  }
+  toastCallback = callback;
+  toastMessageElement.textContent = text;
+  toastElement.className = "custom-toast";
+  toastElement.classList.add(`custom-toast--${type}`, "custom-toast--visible");
+  const duration = type === "error" ? 5000 : 3000;
+  toastTimerId = setTimeout(finishToast, duration);
+  toastCloseButton.addEventListener("click", finishToast);
 }
 
 class Stats {
