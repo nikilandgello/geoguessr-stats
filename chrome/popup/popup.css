@@ -7,7 +7,7 @@ body {
   margin: 0;
   font-family: var(--font-family-second);
   font-size: 14px;
-  color: var(--color-white-80);
+  color: var(--color-white);
 
   background: url("/assets/images/icon.png") center center / 300px 300px
       no-repeat,
@@ -93,7 +93,7 @@ body {
   position: relative;
 
   padding: 5px 0;
-  border-bottom: 1px solid var(--color-white-80);
+  border-bottom: 1px solid var(--color-white);
 }
 
 .stat-item:last-child {
@@ -129,7 +129,7 @@ body {
   bottom: 40px;
 
   background-color: var(--background-accent);
-  color: var(--color-white-80);
+  color: var(--color-white);
   padding: 6px 10px;
   border-radius: 20px;
   font-size: 13px;
@@ -244,7 +244,7 @@ body {
 #fullStatsLink {
   display: inline-block;
   font-family: var(--font-family);
-  color: white;
+  color: var(--color-white);
   font-size: 16px;
   padding: 10px 15px;
   background: linear-gradient(
@@ -271,7 +271,7 @@ body {
   display: block;
   margin-top: 10px;
 
-  color: var(--color-white-80);
+  color: var(--color-white);
   font-size: 12px;
   font-weight: 600;
   position: relative;
@@ -286,7 +286,7 @@ body {
   left: 34%;
   width: 32%;
   height: 1px;
-  background-color: var(--color-white-80);
+  background-color: var(--color-white);
 
   transition: color 0.3s ease;
 }
@@ -315,7 +315,7 @@ body {
 .error-text {
   font-size: 18px;
   font-weight: 600;
-  color: white;
+  color: var(--color-white);
   line-height: 1.4;
 }
 

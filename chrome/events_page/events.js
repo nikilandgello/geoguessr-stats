@@ -66,13 +66,36 @@ async function importData(file) {
     const transaction = db.transaction(["Events"], "readwrite");
     const store = transaction.objectStore("Events");
 
+    const clearRequest = store.clear();
+
+    await new Promise((resolve, reject) => {
+      clearRequest.onsuccess = () => {
+        console.log("Events store cleared successfully");
+        resolve();
+      };
+      clearRequest.onerror = (event) => {
+        console.error("Error clearing Events store:", event.target.error);
+        reject("Error clearing Events store");
+      };
+    });
+
     for (const event of events) {
       await store.add(event);
     }
 
-    alert("Data imported successfully");
+    await new Promise((resolve, reject) => {
+      transaction.oncomplete = () => {
+        console.log("All events imported successfully");
+        resolve();
+      };
+      transaction.onerror = (event) => {
+        console.error("Error importing events:", event.target.error);
+        reject("Error importing events");
+      };
+    });
   } catch (error) {
     console.error("Error importing data:", error);
+    throw error;
   }
 }
 
@@ -84,9 +107,50 @@ function removeOptions(selectElement) {
   }
 }
 
+function setLoadingState(isLoading) {
+  const loadingOverlayEl = document.getElementById("loading-overlay");
+  const contentWrapperEl = document.getElementById("content-wrapper");
+
+  if (isLoading) {
+    contentWrapperEl.style.display = "none";
+    loadingOverlayEl.style.display = "flex";
+  }
+
+  if (!isLoading) {
+    loadingOverlayEl.style.display = "none";
+    contentWrapperEl.style.display = "block";
+  }
+}
+
+function showToast(text, type = "success", callback) {
+  const options = {
+    text: text,
+    duration: 3000,
+    gravity: "top",
+    position: "center",
+    stopOnFocus: true,
+    callback: callback,
+    close: true,
+  };
+
+  if (type === "success") {
+    options.backgroundColor = "linear-gradient(to right, #00b09b, #96c93d)";
+  } else if (type === "error") {
+    options.backgroundColor = "linear-gradient(to right, #ff5f6d, #ffc371)";
+    options.duration = 5000;
+  }
+
+  Toastify(options).showToast();
+}
+
 class Stats {
   constructor(events) {
     this.events = events;
+    this.filteredEvents = [];
+
+    this.allGameScores = [];
+    this.scoresPerPage = 10;
+    this.currentPage = 1;
 
     this.timeFrame = "allTime";
     this.map = "All";
@@ -118,13 +182,7 @@ class Stats {
     this.players = this.getPlayers();
     this.addPlayersSelectOptions();
 
-    if (this.events.length > 0) {
-      document.getElementById("eventsStartPlaying").style.display = "none";
-      document.getElementById("eventsTable").style.visibility = "visible";
-    }
-
     this.populateTopScore();
-    this.populateTable();
     console.log("Updated");
   }
 
@@ -177,13 +235,23 @@ class Stats {
       this.exportToJsonl();
     });
     document.getElementById("importButton").addEventListener("click", (_) => {
-      this.handleImport();
+      document.getElementById("importFileInput").click();
+      this.handleImport;
     });
+
     document
       .getElementById("importFileInput")
-      .addEventListener("change", (_) => {
-        document.getElementById("importButton").disabled = false;
+      .addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          this.handleImport(file);
+        }
       });
+
+    document.getElementById("loadMoreButton").addEventListener("click", () => {
+      this.currentPage++;
+      this.displayScores();
+    });
 
     document.getElementById("anyOptions").addEventListener("change", (e) => {
       let otherOptions = [
@@ -326,9 +394,9 @@ class Stats {
 
   populateTopScore() {
     var scoreList = document.getElementById("scoreList");
-    while (scoreList.firstChild) {
-      scoreList.removeChild(scoreList.lastChild);
-    }
+
+    this.currentPage = 1;
+    scoreList.innerHTML = "";
 
     var filteredEvents = this.events.filter(
       (event) => event.code == "LiveChallengeLeaderboardUpdate"
@@ -378,6 +446,8 @@ class Stats {
         return today_date.getTime() == date.getTime();
       });
     }
+
+    this.filteredEvents = filteredEvents;
 
     // extract all round scores
     var roundScores = [];
@@ -449,51 +519,142 @@ class Stats {
       );
 
     // sort gameScores by totalScore descending
-    gameScores = gameScores.sort((a, b) => b.totalScore - a.totalScore);
-    gameScores = gameScores.slice(0, 5);
+    this.allGameScores = gameScores.sort((a, b) => b.totalScore - a.totalScore);
 
-    // populate topScoreToday div
-    for (var score of gameScores) {
-      let li = document.createElement("li");
-      li.innerText = `${score.playerName}: ${
-        score.totalScore
-      } (${score.date.toLocaleDateString()})`;
+    this.displayScores();
+  }
+
+  displayScores() {
+    const scoreList = document.getElementById("scoreList");
+    const loadMoreButton = document.getElementById("loadMoreButton");
+    const scoreContainer = document.getElementById("scoreListContainer");
+    const noDataMessage = document.getElementById("noDataMessage");
+
+    if (this.allGameScores.length === 0) {
+      noDataMessage.style.display = "block";
+      scoreContainer.style.display = "none";
+      loadMoreButton.style.display = "none";
+      return;
+    }
+
+    noDataMessage.style.display = "none";
+    scoreContainer.style.display = "block";
+
+    const startIndex = (this.currentPage - 1) * this.scoresPerPage;
+    const endIndex = startIndex + this.scoresPerPage;
+
+    const scoresToShow = this.allGameScores.slice(startIndex, endIndex);
+
+    let firstNewElement = null;
+
+    scoresToShow.forEach((score, index) => {
+      const li = document.createElement("li");
+      const dateString = score.date.toLocaleDateString();
+      li.textContent = `${score.playerName}: ${score.totalScore} (${dateString})`;
       scoreList.appendChild(li);
-    }
-  }
 
-  populateTable() {
-    const tableBody = document.getElementById("eventsTableBody");
-    tableBody.textContent = "";
-    let eventsSlice = this.events.slice(-10);
-    eventsSlice = eventsSlice.reverse();
-    eventsSlice.forEach((event) => {
-      let row = tableBody.insertRow();
-      row.insertCell(0).textContent = JSON.stringify(event.code);
-      row.insertCell(1).textContent = JSON.stringify(event.timestamp);
-      let data = document.createElement("textarea");
-      data.textContent = JSON.stringify(event);
-      row.insertCell(2).appendChild(data);
+      if (index === 0) {
+        firstNewElement = li;
+      }
     });
+
+    if (this.currentPage > 1 && firstNewElement) {
+      const newElementOffset =
+        firstNewElement.offsetTop - scoreContainer.offsetTop;
+
+      scoreContainer.scrollTo({
+        top: newElementOffset,
+        behavior: "smooth",
+      });
+    }
+
+    if (endIndex < this.allGameScores.length) {
+      loadMoreButton.style.display = "block";
+    } else {
+      loadMoreButton.style.display = "none";
+    }
   }
 
-  handleImport() {
-    const fileInput = document.getElementById("importFileInput");
-    const file = fileInput.files[0];
-
-    if (file) {
-      importData(file).then((updatedEvents) => {
-        if (updatedEvents) {
-          this.update();
-        }
-      });
-    } else {
-      alert("Please select a file to import.");
+  handleImport(file) {
+    if (!file) {
+      return;
     }
+
+    setLoadingState(true);
+
+    importData(file)
+      .then(() => {
+        showToast("Data imported successfully! Reloading...", "success", () =>
+          location.reload()
+        );
+      })
+      .catch((error) => {
+        setLoadingState(false);
+        showToast("Import failed. Check the console for details.", "error");
+        console.error("Import error:", error);
+      });
   }
 
   exportToJsonl() {
-    const jsonlContent = this.events
+    let leaderboardEvents = this.filteredEvents;
+
+    if (this.player && this.player != "All") {
+      leaderboardEvents = leaderboardEvents.filter((event) => {
+        return event.liveChallenge.leaderboards.round.entries.some(
+          (entry) => entry.name === this.player
+        );
+      });
+    }
+
+    const finalGameIds = new Set(
+      leaderboardEvents.map((event) => event.gameId)
+    );
+
+    if (finalGameIds.size === 0) {
+      showToast("No data to export for the selected filters.", "error");
+      return;
+    }
+
+    const gameToPartyMap = new Map();
+    for (const event of this.events) {
+      if (event.gameId && event.topic && event.topic.startsWith("partyv2:")) {
+        const partyId = event.topic.split(":")[1];
+        if (partyId) {
+          gameToPartyMap.set(event.gameId, partyId);
+        }
+      } else if (event.code === "PartyGameStarted" && event.payload) {
+        try {
+          const payloadData = JSON.parse(event.payload);
+          if (payloadData.lobbyId && payloadData.partyId) {
+            gameToPartyMap.set(payloadData.lobbyId, payloadData.partyId);
+          }
+        } catch (e) {}
+      }
+    }
+
+    const finalPartyIds = new Set();
+    for (const gameId of finalGameIds) {
+      if (gameToPartyMap.has(gameId)) {
+        finalPartyIds.add(gameToPartyMap.get(gameId));
+      }
+    }
+
+    const eventsToExport = this.events.filter((event) => {
+      if (finalGameIds.has(event.gameId)) {
+        return true;
+      }
+
+      if (event.topic && event.topic.startsWith("partyv2:")) {
+        const partyId = event.topic.split(":")[1];
+        if (finalPartyIds.has(partyId)) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    const jsonlContent = eventsToExport
       .map((event) => JSON.stringify(event))
       .join("\n");
     const blob = new Blob([jsonlContent], { type: "application/x-jsonlines" });
@@ -509,8 +670,16 @@ class Stats {
 }
 
 async function populate() {
-  var events = await getEvents();
-  new Stats(events);
+  setLoadingState(true);
+  try {
+    var events = await getEvents();
+    new Stats(events);
+  } catch (error) {
+    console.error("Error populating stats:", error);
+    setLoadingState(false);
+  } finally {
+    setLoadingState(false);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", populate);
