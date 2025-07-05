@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GeoGuessr Stats</title>
     <link rel="stylesheet" href="../libs/toastify/toastify.min.css" />
+    <link rel="stylesheet" href="../libs/flatpickr/flatpickr.min.css" />
     <link rel="stylesheet" href="events.css" />
   </head>
 
@@ -52,7 +53,12 @@
                 <select id="timeFrame">
                   <option value="allTime">All Time</option>
                   <option value="today">Today</option>
+                  <option value="customRange">Custom Range</option>
                 </select>
+              </div>
+              <div class="statsFilter" id="dateRangeFilter" style="display: none;">
+                <span>Date Range</span>
+                <input type="text" id="dateRangePicker" placeholder="Select a date range...">
               </div>
               <div class="statsFilter">
                 <span>Map</span>
@@ -162,6 +168,7 @@
     </div>
 
     <script src="../libs/toastify/toastify.js"></script>
+    <script src="../libs/flatpickr/flatpickr.min.js"></script>
     <script src="events.js"></script>
   </body>
 </html>

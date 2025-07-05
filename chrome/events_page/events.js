@@ -153,6 +153,7 @@ class Stats {
     this.currentPage = 1;
 
     this.timeFrame = "allTime";
+    this.dateRange = [];
     this.map = "All";
     this.player = "All";
     this.roundCount = 5;
@@ -166,7 +167,7 @@ class Stats {
 
     this.addFilterEventListeners();
     this.addEventListeners();
-
+    this.initDatepicker(); 
     this.update();
   }
 
@@ -211,7 +212,6 @@ class Stats {
 
   addFilterEventListeners() {
     let filters = [
-      "timeFrame",
       "roundCount",
       "roundTime",
       "movingAllowed",
@@ -228,6 +228,21 @@ class Stats {
         this.populateTopScore();
       });
     });
+
+    const timeFrameSelect = document.getElementById("timeFrame");
+    const dateRangeFilter = document.getElementById("dateRangeFilter");
+
+    timeFrameSelect.addEventListener("change", (e) => {
+      this.timeFrame = e.target.value;
+    
+      if (this.timeFrame === "customRange") {
+        dateRangeFilter.style.display = "block";
+        
+      } else {
+        dateRangeFilter.style.display = 'none';
+        this.populateTopScore();
+      }
+    })
   }
 
   addEventListeners() {
@@ -444,6 +459,23 @@ class Stats {
         let today_date = new Date();
         today_date.setHours(12, 0, 0, 0);
         return today_date.getTime() == date.getTime();
+      });
+    } else if (this.timeFrame === "customRange" && this.dateRange.length > 0) {
+      const startDate = new Date(this.dateRange[0]);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(
+        this.dateRange.length === 2 ? this.dateRange[1] : this.dateRange[0]
+      );
+      endDate.setHours(23, 59, 59, 999);
+
+      filteredEvents = filteredEvents.filter((event) => {
+        if (!event.timestamp) return false;
+        const parsableTimestamp = event.timestamp.replace(/(\.\d{3})\d+/, "$1");
+        const eventDate = new Date(parsableTimestamp);
+        return (
+          !isNaN(eventDate) && eventDate >= startDate && eventDate <= endDate
+        );
       });
     }
 
@@ -666,6 +698,25 @@ class Stats {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  }
+
+  initDatepicker() {
+    flatpickr("#dateRangePicker", {
+      mode: "range",
+      dateFormat: "Y-m-d",
+      altInput: true,
+      altFormat: "d.m.Y",
+      maxDate: "today",
+      locale: {
+        rangeSeparator: " - ", 
+      },
+      onClose: (selectedDates) => {
+        if (selectedDates.length > 0) {
+          this.dateRange = selectedDates;
+          this.populateTopScore();
+        }
+      },
+    });
   }
 }
 
