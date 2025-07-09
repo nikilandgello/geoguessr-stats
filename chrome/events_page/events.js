@@ -723,6 +723,9 @@ class Stats {
         `;
       row.appendChild(settingsCell);
 
+      row.addEventListener("click", () => this.toggleRoundDetails(row, gameId));
+      row.style.cursor = "pointer"; 
+
       tableBody.appendChild(row);
     });
 
@@ -731,21 +734,162 @@ class Stats {
     nextBtn.disabled = this.tableCurrentPage === totalPages;
   }
 
+  toggleRoundDetails(rowElement, gameId) {
+    const isExpanded = rowElement.classList.contains("expanded");
+
+    if (isExpanded) {
+      rowElement.classList.remove("expanded");
+      const detailsRow = rowElement.nextElementSibling;
+      if (detailsRow && detailsRow.classList.contains("details-row")) {
+        detailsRow.remove();
+      }
+      return;
+    }
+
+    rowElement.classList.add("expanded");
+    const roundDetails = this.getRoundDetailsForGame(gameId);
+
+    if (roundDetails.length === 0) {
+      console.warn(`No details found for gameId: ${gameId}`);
+      rowElement.classList.remove("expanded");
+      return;
+    }
+
+    const detailsRow = document.createElement("tr");
+    detailsRow.classList.add("details-row");
+    const detailsCell = document.createElement("td");
+    detailsCell.colSpan = 6;
+    const detailsTable = this.createDetailsTableHTML(roundDetails);
+    detailsCell.appendChild(detailsTable);
+    detailsRow.appendChild(detailsCell);
+    rowElement.insertAdjacentElement("afterend", detailsRow);
+  }
+
+  getRoundDetailsForGame(gameId) {
+    const gameFinishedEvent = this.events.find(
+      (e) => e.code === "LiveChallengeFinished" && e.gameId === gameId
+    );
+    if (!gameFinishedEvent) return [];
+
+    const roundsData = gameFinishedEvent.liveChallenge.state.rounds;
+    const roundCount = gameFinishedEvent.liveChallenge.state.options.roundCount;
+
+    const leaderboardUpdates = this.events.filter(
+      (e) => e.code === "LiveChallengeLeaderboardUpdate" && e.gameId === gameId
+    );
+
+    const details = [];
+    for (let i = 0; i < roundCount; i++) {
+      const roundNumber = i + 1;
+      const round = roundsData[i];
+
+      if (!round || !round.answer || !round.answer.coordinateAnswerPayload)
+        continue;
+
+      const correctLat = round.answer.coordinateAnswerPayload.coordinate.lat;
+      const correctLng = round.answer.coordinateAnswerPayload.coordinate.lng;
+      const countryCode =
+        round.question.panoramaQuestionPayload.panorama.countryCode;
+
+      const roundUpdate = leaderboardUpdates.find(
+        (u) => u.liveChallenge.leaderboards.round.roundNumber === roundNumber
+      );
+
+      let bestGuess = null;
+      let fastestGuess = null;
+
+      if (
+        roundUpdate &&
+        roundUpdate.liveChallenge.leaderboards.round.guesses.length > 0
+      ) {
+        const validGuesses =
+          roundUpdate.liveChallenge.leaderboards.round.guesses.filter(
+            (g) => g.distance !== null
+          );
+        if (validGuesses.length > 0) {
+          bestGuess = validGuesses.reduce((prev, current) =>
+            prev.distance < current.distance ? prev : current
+          );
+          fastestGuess = validGuesses.reduce((prev, current) =>
+            prev.time < current.time ? prev : current
+          );
+        }
+      }
+
+      details.push({
+        roundNumber,
+        correctPoint: { lat: correctLat, lng: correctLng },
+        countryCode,
+        bestGuess,
+        fastestGuess,
+      });
+    }
+    return details;
+  }
+
+  createDetailsTableHTML(roundDetails) {
+    const tableTemplate = document.getElementById("details-table-template");
+    const rowTemplate = document.getElementById("details-row-template");
+
+    const tableContainer = tableTemplate.content.cloneNode(true);
+    const tableBody = tableContainer.querySelector("tbody");
+
+    roundDetails.forEach((detail) => {
+      const row = rowTemplate.content.cloneNode(true);
+
+      const bestPlayer = detail.bestGuess ? detail.bestGuess.playerName : "N/A";
+      const distanceKm = detail.bestGuess
+        ? (detail.bestGuess.distance / 1000).toFixed(2)
+        : "N/A";
+      const score = detail.bestGuess ? detail.bestGuess.score : "N/A";
+
+      const fastestPlayer = detail.fastestGuess
+        ? detail.fastestGuess.playerName
+        : "N/A";
+      const time = detail.fastestGuess ? `${detail.fastestGuess.time}s` : "N/A";
+
+      const countryFlagHTML = detail.countryCode
+        ? `<img src="https://flagcdn.com/16x12/${detail.countryCode.toLowerCase()}.png" alt="${
+            detail.countryCode
+          }" class="country-flag">`
+        : "N/A";
+
+      row.querySelector(".round-number").textContent = detail.roundNumber;
+      row.querySelector(".country").innerHTML = countryFlagHTML; 
+      row.querySelector(
+        ".correct-location a"
+      ).href = `https://www.google.com/maps?q&layer=c&cbll=${detail.correctPoint.lat},${detail.correctPoint.lng}`;
+      row.querySelector(
+        ".best-guess"
+      ).textContent = `${bestPlayer} (${distanceKm} km, ${score} score)`;
+      row.querySelector(
+        ".fastest-guess"
+      ).textContent = `${fastestPlayer} (${time})`;
+
+      tableBody.appendChild(row);
+    });
+
+    return tableContainer;
+  }
+
   displayScores() {
     const scoreList = document.getElementById("scoreList");
     const loadMoreButton = document.getElementById("loadMoreButton");
     const scoreContainer = document.getElementById("scoreListContainer");
     const noDataMessage = document.getElementById("noDataMessage");
+    const tableSection = document.getElementById("section-history-table");
 
     if (this.allGameScores.length === 0) {
       noDataMessage.style.display = "block";
       scoreContainer.style.display = "none";
       loadMoreButton.style.display = "none";
+      tableSection.style.display = "none";
       return;
     }
 
     noDataMessage.style.display = "none";
     scoreContainer.style.display = "block";
+    tableSection.style.display = "block";
 
     const startIndex = (this.currentPage - 1) * this.scoresPerPage;
     const endIndex = startIndex + this.scoresPerPage;
