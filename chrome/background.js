@@ -1,4 +1,5 @@
 let db;
+const gamesWaitingForFinalUpdate = new Set();
 
 function openDB() {
   return new Promise((resolve, reject) => {
@@ -106,22 +107,55 @@ function updatePlayerIdIfNeeded(incomingPlayerId) {
   });
 }
 
-chrome.runtime.onMessage.addListener((message) => {
-  if (message.data?.code === "HeartBeat") return;
+chrome.runtime.onMessage.addListener(async (message) => {
+  if (message.data?.code === "HeartBeat" || !message.data?.code) return;
 
   if (message.type === "websocket_passed") {
     console.log("[BG] websocket_passed", message.data);
 
     const data = message.data;
     if (data?.code === "BullseyeGuess") return;
+     try {
+       await saveData(data);
 
-    saveData(data);
+       if (data.code === "LiveChallengeFinished") {
+         const gameId = data.gameId;
+         if (!gameId) return; 
+
+         gamesWaitingForFinalUpdate.add(gameId);
+         setTimeout(() => {
+           if (gamesWaitingForFinalUpdate.has(gameId)) {
+             gamesWaitingForFinalUpdate.delete(gameId);
+           }
+         }, 10000);
+       } else if (data.code === "LiveChallengeLeaderboardUpdate") {
+         const gameId = data.gameId;
+
+         if (gameId && gamesWaitingForFinalUpdate.has(gameId)) {
+           console.log(
+             `[BG] Final update for ${gameId} received. Triggering UI refresh.`
+           );
+           
+           chrome.runtime.sendMessage({
+             type: "newGameFinished",
+             payload: data,
+           }).catch((error) => {
+             if (error.message.includes("Receiving end does not exist")) {
+             } else {
+               console.error("Unexpected error sending message:", error);
+              }
+           });
+           gamesWaitingForFinalUpdate.delete(gameId);
+         }
+       }
+     } catch (error) {
+       console.error("[BG] Failed to save or process websocket data:", error);
+     }
   } else if (
     message.type === "websocket_sent" &&
     message.data?.code === "SubscribeToLobby"
   ) {
     const incomingPlayerId = message.data?.playerId;
-
     updatePlayerIdIfNeeded(incomingPlayerId);
   }
 });

@@ -590,7 +590,8 @@ textarea::-webkit-scrollbar-thumb:hover ,
   background-color: var(--container-overlay-blue);
 }
 
-#history-table-body .details-row:hover {
+#history-table-body .details-row:hover,
+#history-table-body .player-guesses-details-row:hover {
   background-color: transparent;
 }
 
@@ -600,8 +601,9 @@ textarea::-webkit-scrollbar-thumb:hover ,
   max-width: 10%;
 } 
 
-.history-table td:nth-child(2),
-.history-table td:nth-child(3) {
+.history-table > tbody > tr > td:nth-child(2),
+.history-table > tbody > tr > td:nth-child(3),
+.nested-table .player-name {
   white-space: nowrap;
   overflow-x: auto;
 }
@@ -623,21 +625,29 @@ textarea::-webkit-scrollbar-thumb:hover ,
   fill: var(--lite-green-active);
 }
 
+.expanded-deeper .expand-arrow {
+  transform: rotate(90deg);
+  fill: var(--lite-green-active);
+}
+
 .country img {
   margin: 0 auto;
 }
 
-.nested-table tbody .correct-location {
+.nested-table tbody .correct-location,
+.nested-table tbody .guess-location {
   padding: 0;
 }
 
-.correct-location a {
+.correct-location a,
+.guess-location a {
   text-decoration: underline;
   transition: color 0.3s ease;
   padding: 11px 2px;
 }
 
-.correct-location a:hover {
+.correct-location a:hover, 
+.guess-location a:hover {
   color: var(--lite-green-active);
 }
 

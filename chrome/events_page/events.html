@@ -252,6 +252,36 @@
       </tr>
     </template>
 
+    <template id="player-guesses-table-template">
+      <div class="nested-table-wrapper player-guesses-wrapper">
+        <table class="nested-table player-guesses-table">
+          <thead>
+            <tr>
+              <th>Player Name</th>
+              <th>Guess Point</th>
+              <th>Score</th>
+              <th>Distance</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+    </template>
+
+    <template id="player-guess-row-template">
+      <tr>
+        <td class="player-name"></td>
+        <td class="guess-location">
+            <a href="" target="_blank">View Guess</a>
+        </td>
+        <td class="guess-score"></td>
+        <td class="guess-distance"></td>
+        <td class="guess-time"></td>
+      </tr>
+    </template>
+
     <script src="../libs/flatpickr/flatpickr.min.js"></script>
     <script src="events.js"></script>
   </body>
