@@ -174,18 +174,18 @@
         </div>
       </section>
 
-      <section class="section section-history-table">
+      <section class="section section-history-table" id="section-history-table">
         <div class="container history-table-container">
             <h2 class="title">Game History Details</h2>
             <div class="table-wrapper">
               <table class="history-table">
                 <colgroup>
-                <col style="width: 10%" />
+                <col style="width: 30px" />
                 <col/>
                 <col/>
                 <col style="width: 18%;"/>
                 <col/>
-                <col style="width: 10%" />
+                <col style="width: 30px" />
                 </colgroup>
                   <thead>
                       <tr>
@@ -209,6 +209,48 @@
         </div>
       </section>
     </div>
+
+    <template id="details-table-template">
+      <div class="nested-table-wrapper">
+        <table class="nested-table">
+          <colgroup>
+            <col style="width: 30px" />
+            <col/ style =  "width: 40px"/>
+            <col/ style="width: 40px;">
+            <col style="width: 17%;"/>
+            <col/>
+            <col />
+            </colgroup>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Rnd.</th>
+              <th>Ctry.</th>
+              <th>Correct Point</th>
+              <th>Best Guess</th>
+              <th>Fastest Guess</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+    </template>
+
+    <template id="details-row-template">
+      <tr>
+        <td>
+          <svg class="expand-arrow" width="25" height="25"><use href="../assets/icons/sprite.svg#icon-arrow"></use></svg>
+        </td>
+        <td class="round-number"></td>
+        <td class="country"></td>
+        <td class="correct-location">
+            <a href="" target="_blank">View on Map</a>
+        </td>
+        <td class="best-guess"></td>
+        <td class="fastest-guess"></td>
+      </tr>
+    </template>
 
     <script src="../libs/flatpickr/flatpickr.min.js"></script>
     <script src="events.js"></script>

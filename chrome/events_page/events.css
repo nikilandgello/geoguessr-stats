@@ -61,8 +61,7 @@ body {
 
 #exportButton,
 #importButton,
-#loadMoreButton,
-#loadMoreTableButton {
+#loadMoreButton{
   display: inline-block;
   font-family: var(--font-family);
   color: var(--color-white);
@@ -82,14 +81,17 @@ body {
 
 #exportButton:hover,
 #importButton:hover,
-#loadMoreButton:hover,
-#loadMoreTableButton:hover {
+#loadMoreButton:hover {
   transform: scale(1.05);
   background: linear-gradient(
     var(--lite-green-active),
     var(--dark-green-default)
   );
   color: var(--dark-green-button);
+}
+
+#loadMoreButton {
+  margin-top: 20px;
 }
 
 .file-select-label {
@@ -125,7 +127,6 @@ body {
 #statsFilters,
 #topScore {
   flex: 1 1 45%;
-  min-width: 300px;
 }
 
 .statsFilter {
@@ -300,7 +301,9 @@ span.flatpickr-weekday {
   border:1px solid var(--color-grey); 
 }
 .flatpickr-day.today:hover {
+  border:1px solid var(--color-grey); 
   background: var(--color-grey); 
+  color: var(--color-white);
 }
 
 .flatpickr-current-month .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
@@ -385,14 +388,14 @@ span.flatpickr-weekday {
 
 /** score list **/
 #scoreListContainer {
-  height: 425px;
+  max-height: 425px;
+  min-height: 100px;
   width: 100%;
   border-radius: 4px;
   padding: 10px;
   background-color: transparent;
   overflow-y: auto;
   box-sizing: border-box;
-  margin-bottom: 20px;
 }
 
 #noDataMessage {
@@ -500,11 +503,17 @@ textarea::-webkit-scrollbar-thumb:hover ,
 }
 
 /** TABLE **/
-.table-wrapper {
+.table-wrapper,
+.nested-table-wrapper {
   width: 100%;
 }
 
-.history-table {
+.nested-table-wrapper {
+  padding-left: 30px;
+}
+
+.history-table,
+.nested-table {
   border-collapse: collapse;
   width: 100%;
   table-layout: fixed;
@@ -513,12 +522,22 @@ textarea::-webkit-scrollbar-thumb:hover ,
   box-shadow: 0 0 0 1px var(--color-white);
 }
 
+.nested-table {
+  border-radius: 0%;
+  font-size: 12px;
+}
+
 .history-table th,
-.history-table td {
+.history-table td,
+.nested-table td {
   padding: 15px 2px;
   text-align: center;
   border-bottom: 1px solid var(--color-white);
   border-right: 1px solid var(--color-white);
+}
+
+.details-row td[colspan="6"] {
+  padding: 0;
 }
 
 .history-table th:last-child,
@@ -534,8 +553,24 @@ textarea::-webkit-scrollbar-thumb:hover ,
   border-top-right-radius: 11px;
 }
 
-.history-table tr:last-child td {
+#history-table-body > tr:last-child > td {
   border-bottom: none;
+} 
+
+.nested-table th:first-child {
+  border-top-left-radius: 0px;
+}
+
+.nested-table th:last-child {
+  border-top-right-radius: 0px;
+}
+
+.nested-table tbody > tr:last-child > td  {
+  border-bottom: none;
+}
+
+#history-table-body > tr.details-row:last-child .nested-table {
+  border-bottom-right-radius: 10px;
 }
 
 .history-table th {
@@ -551,9 +586,14 @@ textarea::-webkit-scrollbar-thumb:hover ,
   transition: background-color 0.3s ease;
 }
 
-.history-table tbody tr:hover {
+#history-table-body tr:hover {
   background-color: var(--container-overlay-blue);
 }
+
+#history-table-body .details-row:hover {
+  background-color: transparent;
+}
+
 
 .history-table th:nth-child(1),
 .history-table th:nth-child(6) {
@@ -576,6 +616,34 @@ textarea::-webkit-scrollbar-thumb:hover ,
   width: 25px;
   height: 25px;
   transition: transform 0.2s ease-in-out;
+}
+
+#history-table-body .expanded .expand-arrow {
+  transform: rotate(90deg);
+  fill: var(--lite-green-active);
+}
+
+.country img {
+  margin: 0 auto;
+}
+
+.nested-table tbody .correct-location {
+  padding: 0;
+}
+
+.correct-location a {
+  text-decoration: underline;
+  transition: color 0.3s ease;
+  padding: 11px 2px;
+}
+
+.correct-location a:hover {
+  color: var(--lite-green-active);
+}
+
+.best-guess, .fastest-guess {
+  white-space: nowrap;
+  overflow-x: auto;
 }
 
 /** tooltip settings **/
@@ -611,11 +679,11 @@ textarea::-webkit-scrollbar-thumb:hover ,
   transition: transform 0.3s ease;
 }
 
-.tooltip-container:hover .icon-settings {
+.settings-cell:hover .icon-settings {
   transform: rotate(90deg);
 }
 
-.tooltip-container:hover .tooltip-text { 
+.settings-cell:hover .tooltip-text { 
   visibility: visible; 
   opacity: 1; 
 }
@@ -694,6 +762,15 @@ textarea::-webkit-scrollbar-thumb:hover ,
 
   .history-table {
     font-size: 12px;
+  }
+
+  .nested-table {
+    font-size: 10px;
+  }
+
+  .expand-arrow {
+    width: 20px;
+    height: 20px;
   }
 }
 
