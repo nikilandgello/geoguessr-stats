@@ -1,3 +1,9 @@
+chrome.action.onClicked.addListener((message) => {
+    chrome.tabs.create({
+        url: 'events_page/events.html'
+    });
+});
+
 let db;
 const gamesWaitingForFinalUpdate = new Set();
 

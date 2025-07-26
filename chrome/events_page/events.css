@@ -59,11 +59,13 @@ body {
   font-size: 35px;
 }
 
+#kmMilesSwitch,
 #exportButton,
 #importButton,
 #loadMoreButton{
   display: inline-block;
-  font-family: var(--font-family);
+  font-family: var(--font-family-second);
+  font-weight: 600;
   color: var(--color-white);
   font-size: 16px;
   padding: 10px 15px;
@@ -113,7 +115,7 @@ body {
 
 /** STATS **/
 .section-top-score {
-  padding-top: 60px;
+  padding-top: 40px;
 }
 
 .top-score-content {
@@ -404,8 +406,8 @@ span.flatpickr-weekday {
 
 #scoreList li {
   background-color: var(--shadow-glow-light);
-  padding: 15px 20px;
-  margin-bottom: 25px;
+  padding: 15px 15px;
+  margin-bottom: 15px;
   border-radius: 20px;
   border-left: 3px solid var(--dark-green-default);
   font-family: var(--font-family-second);
@@ -576,10 +578,6 @@ textarea::-webkit-scrollbar-thumb:hover ,
 .history-table th {
   background-color: var(--container-overlay-dark);
   font-weight: bold;
-}
-
-.history-table td {
-  background-color: var(--shadow-glow-light);
 }
 
 .history-table tbody tr {

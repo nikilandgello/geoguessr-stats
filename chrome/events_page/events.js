@@ -161,6 +161,8 @@ class Stats {
     ).length;
     this.filteredEvents = [];
 
+    this.unit = "km";
+
     this.allGameScores = [];
     this.scoresPerPage = 10;
     this.currentPage = 1;
@@ -343,6 +345,16 @@ class Stats {
   }
 
   addEventListeners() {
+    let kmMilesSwitch = document.getElementById("kmMilesSwitch");
+    let unit = localStorage.getItem("unit") || "km";
+    this.unit = unit;
+    kmMilesSwitch.innerText = unit === "km" ? "Switch to Miles" : "Switch to KM";
+    kmMilesSwitch.addEventListener("click", () => {
+      this.unit = this.unit === "km" ? "miles" : "km";
+      kmMilesSwitch.innerText = this.unit === "km" ? "Switch to Miles" : "Switch to KM";
+      localStorage.setItem("unit", this.unit);
+      this.update();
+    });
     document.getElementById("exportButton").addEventListener("click", (_) => {
       this.exportToJsonl();
     });
@@ -882,9 +894,13 @@ class Stats {
       const tr = row.querySelector("tr");
 
       const bestPlayer = detail.bestGuess ? detail.bestGuess.playerName : "N/A";
-      const distanceKm = detail.bestGuess
-        ? (detail.bestGuess.distance / 1000).toFixed(2)
-        : "N/A";
+      let distance = "N/A";
+      if (detail.bestGuess) {
+        distance = this.unit === "km"
+          ? (detail.bestGuess.distance / 1000).toFixed(2)
+          : (detail.bestGuess.distance / 1609.34).toFixed(2);
+      }
+      const distanceStr = distance !== "N/A" ? `${distance} ${this.unit}` : "N/A";
       const score = detail.bestGuess ? detail.bestGuess.score : "N/A";
 
       const fastestPlayer = detail.fastestGuess
@@ -905,7 +921,7 @@ class Stats {
       ).href = `https://www.google.com/maps?q&layer=c&cbll=${detail.correctPoint.lat},${detail.correctPoint.lng}`;
       tr.querySelector(
         ".best-guess"
-      ).textContent = `${bestPlayer} (${distanceKm} km, ${score} pts)`;
+      ).textContent = `${bestPlayer} (${distanceStr}, ${score} pts)`;
       tr.querySelector(
         ".fastest-guess"
       ).textContent = `${fastestPlayer} (${time})`;
@@ -967,29 +983,25 @@ class Stats {
     playerGuesses.sort((a, b) => b.score - a.score);
 
     playerGuesses.forEach((guess) => {
+      console.log(guess);
       const row = rowTemplate.content.cloneNode(true);
       const tr = row.querySelector("tr");
 
-      const roundDetail = roundDetails.find(
-        (d) => d.roundNumber === guess.roundNumber
-      );
-      if (roundDetail) {
-        const correctPoint = roundDetail.correctPoint;
-        const guessLink = tr.querySelector(".guess-location a");
-
-        guessLink.href = `https://www.google.com/maps/dir/${guess.lat},${guess.lng}/${correctPoint.lat},${correctPoint.lng}`;
-        guessLink.textContent = "View Route";
-      } else {
-        const guessLink = tr.querySelector(".guess-location a");
-        guessLink.href = `https://www.google.com/maps?q=${guess.lat},${guess.lng}`;
-        guessLink.textContent = "View Point";
-      }
+      const guessLink = tr.querySelector(".guess-location a");
+      guessLink.href = `https://www.google.com/maps?q=${guess.lat},${guess.lng}`;
+      guessLink.textContent = "View on Map";
 
       tr.querySelector(".player-name").textContent = guess.playerName;
       tr.querySelector(".guess-score").textContent = guess.score;
-      tr.querySelector(".guess-distance").textContent = `${(
-        guess.distance / 1000
-      ).toFixed(2)} km`;
+      let distanceStr = "N/A";
+      if (this.unit === "km") {
+        let distance = (guess.distance / 1000).toFixed(2);
+        distanceStr = `${distance} km`;
+      } else {
+        let distance = (guess.distance / 1609.34).toFixed(2);
+        distanceStr = `${distance} miles`;
+      }
+      tr.querySelector(".guess-distance").textContent = distanceStr;
       tr.querySelector(".guess-time").textContent = `${guess.time}s`;
 
       tableBody.appendChild(tr);
