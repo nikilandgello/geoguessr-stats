@@ -162,6 +162,10 @@ class Stats {
     this.scoresPerPage = 10;
     this.currentPage = 1;
 
+    this.tableCurrentPage = 1;
+    this.tableItemsPerPage = 10;
+    this.uniqueGameIds = [];
+
     this.timeFrame = "allTime";
     this.dateRange = [];
     this.map = "All";
@@ -174,6 +178,73 @@ class Stats {
     this.anyOptions = true;
     this.anyRoundCount = true;
     this.anyRoundTime = true;
+
+    this.popularMaps = {
+      world: "World",
+      "diverse-world": "Diverse World",
+      "urban-world": "Urban World",
+      "famous-places": "Famous Places",
+
+      europe: "Europe",
+      africa: "Africa",
+      asia: "Asia",
+      oceania: "Oceania",
+      ukraine: "Ukraine",
+      "north-america": "North America",
+      "south-america": "South America",
+      "european-union": "European Union",
+
+      us: "United States",
+      uk: "United Kingdom",
+      japan: "Japan",
+      sweden: "Sweden",
+      france: "France",
+      germany: "Germany",
+      canada: "Canada",
+      australia: "Australia",
+      brazil: "Brazil",
+      spain: "Spain",
+      italy: "Italy",
+
+      "62a44b22040f04bd36e8a914": "A Community World",
+      "5d73f83d82777cb5781464f2": "A Balanced World",
+      "616015f16795c20001613e49": "An Educated World",
+      "59662b185199be7d6438d132": "A Diverse World",
+      "6029991c5048850001d572a9": "A Pinpointable World",
+      "5cd30a0d17e6fc441ceda867": "An Extraordinary World",
+      "6078c830e945e900015f4a64": "A Learning World",
+      "6089bfcff6a0770001f645dd": "An Arbitrary World",
+      "5b0a80f8596695b708122809": "An Improved World",
+      "59e940ed39d855c868104b32": "GeoBettr World - Replayable",
+      "65c86935d327035509fd616f": "A Rainbolt World",
+      "5e81b3e32bd8911388d65a4c": "A No Move World",
+
+      "5d0ce72c8b19a91fe05aa7a8": "Flags of the World",
+      "61a1846aee665b00016680ce": "Fun with Flags!",
+      "60de2a8a81b92c00015f29e1": "The 198 Capitals Of The World",
+      "60de2a8a81b92c00010f29e1": "The 198 Capitals Of The World",
+      "56e45886dc7cd6a164e861ac": "US Cities",
+      "5bbb74ce2c01735208560cf6": "World Cities",
+      "5d26eb1741d2a43c1cd4524b": "US State Capitols",
+      "56f28536148a781b143b0c3b": "European stadiums",
+      "5cfda2c9bc79e16dd866104d": "I Saw The Sign 2.0",
+      "5754651a00a27f6f482a2a3d": "Where's that Mcdonald's?",
+      "5b5a0286632c4e64ec41dd8c": "Restaurant interiors",
+      "5f9b1d4a6a59940001a4f9ae": "Airport Runways",
+      "5ed59e1f375e6a6a68a2d227": "All the Wetherspoons",
+      "5fa381d0e27b4900014e0732":
+        "Interesting Photospheres in Obscure Countries",
+      "5d374dc141d2a43c1cd4527b": "GeoDetective",
+      "5dbaf08ed0d2a478444d2e8e": "AI Generated World",
+      "6284d140132039d9a7f1e265": "Urban Hell",
+      "6737723f1207048de469c169": "A Diverse World",
+
+      "5b0d907bfaa4cf3ce43bc6b1": "500 000 lieux en France métropolitaine !",
+      "5eb5ea048734a02c543f2ae1": "La Diversité Française ",
+
+      "57357d9f77abe957e8cfd15f": "Dumb test",
+      "57357d9f77abe957e8cfd10f": "Dumb test",
+    };
 
     this.addFilterEventListeners();
     this.addEventListeners();
@@ -278,6 +349,23 @@ class Stats {
       this.displayScores();
     });
 
+    document.getElementById("tablePrevButton").addEventListener("click", () => {
+      if (this.tableCurrentPage > 1) {
+        this.tableCurrentPage--;
+        this.populateHistoryTable();
+      }
+    });
+
+    document.getElementById("tableNextButton").addEventListener("click", () => {
+      const totalPages = Math.ceil(
+        this.uniqueGameIds.length / this.tableItemsPerPage
+      );
+      if (this.tableCurrentPage < totalPages) {
+        this.tableCurrentPage++;
+        this.populateHistoryTable();
+      }
+    });
+
     document.getElementById("anyOptions").addEventListener("change", (e) => {
       let otherOptions = [
         "movingAllowed",
@@ -328,39 +416,9 @@ class Stats {
     removeOptions(mapSelect);
     mapSelect.options[0] = new Option("All", "All");
 
-    let popularMaps = {
-      "57357d9f77abe957e8cfd15f": "Dumb test",
-      "62a44b22040f04bd36e8a914": "A Community World",
-      "5d0ce72c8b19a91fe05aa7a8": "Flags of the World",
-      "56f28536148a781b143b0c3b": "European stadiums",
-      "5cfda2c9bc79e16dd866104d": "I Saw The Sign 2.0",
-      "5b0d907bfaa4cf3ce43bc6b1": "500 000 lieux en France métropolitaine !",
-      "56e45886dc7cd6a164e861ac": "US Cities",
-      "5d374dc141d2a43c1cd4527b": "GeoDetective",
-      "60de2a8a81b92c00015f29e1": "The 198 Capitals Of The World",
-      "5d73f83d82777cb5781464f2": "A Balanced World",
-      "5dbaf08ed0d2a478444d2e8e": "AI Generated World",
-      "6029991c5048850001d572a9": "A Pinpointable World",
-      "5cd30a0d17e6fc441ceda867": "An Extraordinary World",
-      "6078c830e945e900015f4a64": "A Learning World",
-      "6089bfcff6a0770001f645dd": "An Arbitrary World",
-      "5754651a00a27f6f482a2a3d": "Where's that Mcdonald's?",
-      "5bbb74ce2c01735208560cf6": "World Cities",
-      "5b0a80f8596695b708122809": "An Improved World",
-      "59e940ed39d855c868104b32": "GeoBettr World - Replayable",
-      "5ed59e1f375e6a6a68a2d227": "All the Wetherspoons",
-      "5eb5ea048734a02c543f2ae1": "La Diversité Française ",
-      "65c86935d327035509fd616f": "A Rainbolt World",
-      "61a1846aee665b00016680ce": "Fun with Flags!",
-      "5fa381d0e27b4900014e0732":
-        "Interesting Photospheres in Obscure Countries",
-      "57357d9f77abe957e8cfd10f": "Dumb test",
-      "60de2a8a81b92c00010f29e1": "The 198 Capitals Of The World",
-    };
-
     for (let map of maps) {
       var option;
-      if (map in popularMaps) option = new Option(popularMaps[map], map);
+      if (map in this.popularMaps) option = new Option(this.popularMaps[map], map);
       else if (map == "world") option = new Option(map, map);
       else option = new Option(map, map);
       mapSelect.options[mapSelect.options.length] = option;
@@ -421,6 +479,8 @@ class Stats {
     var scoreList = document.getElementById("scoreList");
 
     this.currentPage = 1;
+    this.tableCurrentPage = 1;
+
     scoreList.innerHTML = "";
 
     var filteredEvents = this.events.filter(
@@ -560,10 +620,115 @@ class Stats {
         (record) => record.playerName == this.player
       );
 
+    this.uniqueGameIds = [...new Set(gameScores.map((score) => score.gameId))];
+    this.uniqueGameIds.sort((gameId_A, gameId_B) => {
+      const dateA = this.gameOptions[gameId_A].date;
+      const dateB = this.gameOptions[gameId_B].date;
+      return dateB - dateA;
+    });
+
     // sort gameScores by totalScore descending
     this.allGameScores = gameScores.sort((a, b) => b.totalScore - a.totalScore);
 
     this.displayScores();
+    this.populateHistoryTable();
+  }
+
+  populateHistoryTable() {
+    const tableBody = document.getElementById("history-table-body");
+    const paginationControls = document.getElementById(
+      "tablePaginationControls"
+    );
+    const prevBtn = document.getElementById("tablePrevButton");
+    const nextBtn = document.getElementById("tableNextButton");
+    const pageIndicator = document.getElementById("tablePageIndicator");
+
+    tableBody.innerHTML = "";
+    const totalPages = Math.ceil(
+      this.uniqueGameIds.length / this.tableItemsPerPage
+    );
+
+    if (totalPages <= 1) {
+      paginationControls.style.display = "none";
+    } else {
+      paginationControls.style.display = "flex";
+    }
+
+    const startIndex = (this.tableCurrentPage - 1) * this.tableItemsPerPage;
+    const endIndex = startIndex + this.tableItemsPerPage;
+    const gamesToShow = this.uniqueGameIds.slice(startIndex, endIndex);
+
+    gamesToShow.forEach((gameId) => {
+      const gameOptions = this.gameOptions[gameId];
+      console.log(gameOptions);
+      if (!gameOptions) return;
+
+      const row = document.createElement("tr");
+
+      // arrow
+      const expandCell = document.createElement("td");
+      expandCell.innerHTML = `<svg class="expand-arrow" width="25" height="25"><use href="../assets/icons/sprite.svg#icon-arrow"></use></svg>`;
+      row.appendChild(expandCell);
+
+      // date
+      const dateCell = document.createElement("td");
+      dateCell.textContent = gameOptions.date.toLocaleString("uk-UA", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      row.appendChild(dateCell);
+
+      // mape name
+      const mapCell = document.createElement("td");
+      const mapName =
+        this.popularMaps[gameOptions.mapSlug] || gameOptions.mapSlug;
+      mapCell.textContent = mapName;
+      row.appendChild(mapCell);
+
+      // round time
+      const timeCell = document.createElement("td");
+      timeCell.textContent = `${gameOptions.roundTime} sec`;
+      row.appendChild(timeCell);
+
+      // move
+      const moveCell = document.createElement("td");
+      moveCell.textContent = gameOptions.movementOptions.forbidMoving
+        ? "No Move"
+        : "Move";
+      row.appendChild(moveCell);
+
+      // settings
+      const settingsCell = document.createElement("td");
+      settingsCell.classList.add("settings-cell");
+
+      const panningAllowed = !gameOptions.movementOptions.forbidRotating;
+      const zoomingAllowed = !gameOptions.movementOptions.forbidZooming;
+
+      settingsCell.innerHTML = `
+          <div class="tooltip-container">
+            <svg class="icon-settings" width="18" height="18"><use href="../assets/icons/sprite.svg#icon-setting"></use></svg>
+            <div class="tooltip-text">
+              <p><strong>Panning:</strong> ${
+                panningAllowed ? "Allowed" : "Disallowed"
+              }</p>
+              <p><strong>Zooming:</strong> ${
+                zoomingAllowed ? "Allowed" : "Disallowed"
+              }</p>
+              <p><strong>Rounds:</strong> ${gameOptions.roundCount}</p>
+            </div>
+          </div>
+        `;
+      row.appendChild(settingsCell);
+
+      tableBody.appendChild(row);
+    });
+
+    pageIndicator.textContent = `${this.tableCurrentPage} / ${totalPages}`;
+    prevBtn.disabled = this.tableCurrentPage === 1;
+    nextBtn.disabled = this.tableCurrentPage === totalPages;
   }
 
   displayScores() {

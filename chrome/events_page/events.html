@@ -173,6 +173,41 @@
           </div>
         </div>
       </section>
+
+      <section class="section section-history-table">
+        <div class="container history-table-container">
+            <h2 class="title">Game History Details</h2>
+            <div class="table-wrapper">
+              <table class="history-table">
+                <colgroup>
+                <col style="width: 10%" />
+                <col/>
+                <col/>
+                <col style="width: 18%;"/>
+                <col/>
+                <col style="width: 10%" />
+                </colgroup>
+                  <thead>
+                      <tr>
+                          <th></th>
+                          <th>Date</th>
+                          <th>Map name</th>
+                          <th>Round time</th>
+                          <th>Moving allowed</th>
+                          <th></th>
+                      </tr>
+                  </thead>
+                  <tbody id="history-table-body">
+                  </tbody>
+              </table>
+          </div>
+          <div id="tablePaginationControls" class="pagination-controls" style="display: none;">
+            <button id="tablePrevButton" class="pagination-btn" disabled>< Prev</button>
+            <span id="tablePageIndicator" class="page-indicator">1 / 1</span>
+            <button id="tableNextButton" class="pagination-btn">Next ></button>
+        </div>
+        </div>
+      </section>
     </div>
 
     <script src="../libs/flatpickr/flatpickr.min.js"></script>

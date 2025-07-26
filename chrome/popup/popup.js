@@ -188,7 +188,6 @@ const popularMaps = {
   canada: "Canada",
   australia: "Australia",
   brazil: "Brazil",
-  russia: "Russia",
   spain: "Spain",
   italy: "Italy",
 
