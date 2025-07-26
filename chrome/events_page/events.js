@@ -156,6 +156,9 @@ function showToast(text, type = "success", callback) {
 class Stats {
   constructor(events) {
     this.events = events;
+    this.totalGamesCount = this.events.filter(
+      (e) => e.code === "LiveChallengeFinished"
+    ).length;
     this.filteredEvents = [];
 
     this.allGameScores = [];
@@ -272,18 +275,31 @@ class Stats {
     var roundEvents = this.events.filter(
       (event) => event.code == "LiveChallengeLeaderboardUpdate"
     );
-    var gameRoundsMap = new Map();
+    var gameRoundsMap = {};
     for (var event of roundEvents) {
       if (!(event.gameId in gameRoundsMap)) gameRoundsMap[event.gameId] = 1;
       else gameRoundsMap[event.gameId] += 1;
     }
 
+    const startTimes = new Map();
+    this.events.forEach((e) => {
+      if (e.code === "LiveChallengeStarted" && e.gameId && e.timestamp) {
+        if (!startTimes.has(e.gameId)) {
+          startTimes.set(e.gameId, e.timestamp);
+        }
+      }
+    });
+
     var filteredEvents = this.events.filter(
       (event) => event.code == "LiveChallengeFinished"
     );
-    var gameOptions = new Map();
+    var gameOptions = {};
     for (var event of filteredEvents) {
-      event.liveChallenge.state.options["date"] = new Date(event.timestamp);
+      const startTime = startTimes.get(event.gameId);
+
+      event.liveChallenge.state.options["date"] = new Date(
+        startTime || event.timestamp
+      );
       if (event.gameId in gameRoundsMap)
         gameOptions[event.gameId] = event.liveChallenge.state.options;
     }
@@ -402,13 +418,6 @@ class Stats {
         ? "none"
         : "inline-block";
     });
-
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      (async () => {
-        this.events = await getEvents();
-        this.update();
-      })();
-    });
   }
 
   addMapsSelectOptions(maps) {
@@ -418,7 +427,8 @@ class Stats {
 
     for (let map of maps) {
       var option;
-      if (map in this.popularMaps) option = new Option(this.popularMaps[map], map);
+      if (map in this.popularMaps)
+        option = new Option(this.popularMaps[map], map);
       else if (map == "world") option = new Option(map, map);
       else option = new Option(map, map);
       mapSelect.options[mapSelect.options.length] = option;
@@ -554,24 +564,28 @@ class Stats {
     // extract all round scores
     var roundScores = [];
     var nonStandardGames = new Set();
-    for (var event of filteredEvents) {
-      let gameId = event.gameId;
-      let roundNumber = event.liveChallenge.leaderboards.round.roundNumber;
-      for (
-        let i = 0;
-        i < event.liveChallenge.leaderboards.round.guesses.length;
-        i++
-      ) {
-        let guess = event.liveChallenge.leaderboards.round.guesses[i];
-        let entry = event.liveChallenge.leaderboards.round.entries[i];
-        if (!guess) {
-          guess = {};
+    for (const event of filteredEvents) {
+      const gameId = event.gameId;
+      const roundNumber = event.liveChallenge.leaderboards.round.roundNumber;
+      const guesses = event.liveChallenge.leaderboards.round.guesses;
+      const entries = event.liveChallenge.leaderboards.round.entries;
+
+      if (!guesses || !entries) continue;
+
+      for (let i = 0; i < guesses.length; i++) {
+        const guessData = guesses[i];
+        const entryData = entries[i];
+        if (!entryData || !entryData.name) continue;
+        if (roundNumber > 5) {
+          nonStandardGames.add(gameId);
         }
-        guess["gameId"] = gameId;
-        guess["roundNumber"] = roundNumber;
-        if (roundNumber > 5) nonStandardGames.add(gameId);
-        guess["playerName"] = entry.name;
-        roundScores.push(guess);
+        const scoreRecord = {
+          ...guessData,
+          gameId: gameId,
+          roundNumber: roundNumber,
+          playerName: entryData.name,
+        };
+        roundScores.push(scoreRecord);
       }
     }
     var roundScoresCopy = roundScores;
@@ -660,7 +674,6 @@ class Stats {
 
     gamesToShow.forEach((gameId) => {
       const gameOptions = this.gameOptions[gameId];
-      console.log(gameOptions);
       if (!gameOptions) return;
 
       const row = document.createElement("tr");
@@ -724,7 +737,7 @@ class Stats {
       row.appendChild(settingsCell);
 
       row.addEventListener("click", () => this.toggleRoundDetails(row, gameId));
-      row.style.cursor = "pointer"; 
+      row.style.cursor = "pointer";
 
       tableBody.appendChild(row);
     });
@@ -736,6 +749,20 @@ class Stats {
 
   toggleRoundDetails(rowElement, gameId) {
     const isExpanded = rowElement.classList.contains("expanded");
+
+    const allGameRows = rowElement.parentNode.querySelectorAll(
+      "tr:not(.details-row)"
+    );
+
+    allGameRows.forEach((row) => {
+      if (row !== rowElement && row.classList.contains("expanded")) {
+        row.classList.remove("expanded");
+        const detailsRow = row.nextElementSibling;
+        if (detailsRow && detailsRow.classList.contains("details-row")) {
+          detailsRow.remove();
+        }
+      }  
+    });
 
     if (isExpanded) {
       rowElement.classList.remove("expanded");
@@ -791,26 +818,41 @@ class Stats {
       const countryCode =
         round.question.panoramaQuestionPayload.panorama.countryCode;
 
-      const roundUpdate = leaderboardUpdates.find(
-        (u) => u.liveChallenge.leaderboards.round.roundNumber === roundNumber
-      );
+      const roundUpdate = leaderboardUpdates
+        .slice()
+        .reverse()
+        .find(
+          (u) => u.liveChallenge.leaderboards.round.roundNumber === roundNumber
+        );
 
       let bestGuess = null;
       let fastestGuess = null;
+      let playerGuesses = [];
 
       if (
         roundUpdate &&
         roundUpdate.liveChallenge.leaderboards.round.guesses.length > 0
       ) {
-        const validGuesses =
-          roundUpdate.liveChallenge.leaderboards.round.guesses.filter(
-            (g) => g.distance !== null
-          );
-        if (validGuesses.length > 0) {
-          bestGuess = validGuesses.reduce((prev, current) =>
+        const guesses = roundUpdate.liveChallenge.leaderboards.round.guesses;
+        const entries = roundUpdate.liveChallenge.leaderboards.round.entries;
+
+        for (let i = 0; i < guesses.length; i++) {
+          const guessData = guesses[i];
+          const entryData = entries[i];
+
+          if (guessData && entryData) {
+            playerGuesses.push({
+              ...guessData,
+              playerName: entryData.name,
+            });
+          }
+        }
+
+        if (playerGuesses.length > 0) {
+          bestGuess = playerGuesses.reduce((prev, current) =>
             prev.distance < current.distance ? prev : current
           );
-          fastestGuess = validGuesses.reduce((prev, current) =>
+          fastestGuess = playerGuesses.reduce((prev, current) =>
             prev.time < current.time ? prev : current
           );
         }
@@ -822,6 +864,7 @@ class Stats {
         countryCode,
         bestGuess,
         fastestGuess,
+        playerGuesses,
       });
     }
     return details;
@@ -836,6 +879,7 @@ class Stats {
 
     roundDetails.forEach((detail) => {
       const row = rowTemplate.content.cloneNode(true);
+      const tr = row.querySelector("tr");
 
       const bestPlayer = detail.bestGuess ? detail.bestGuess.playerName : "N/A";
       const distanceKm = detail.bestGuess
@@ -854,19 +898,101 @@ class Stats {
           }" class="country-flag">`
         : "N/A";
 
-      row.querySelector(".round-number").textContent = detail.roundNumber;
-      row.querySelector(".country").innerHTML = countryFlagHTML; 
-      row.querySelector(
+      tr.querySelector(".round-number").textContent = detail.roundNumber;
+      tr.querySelector(".country").innerHTML = countryFlagHTML;
+      tr.querySelector(
         ".correct-location a"
       ).href = `https://www.google.com/maps?q&layer=c&cbll=${detail.correctPoint.lat},${detail.correctPoint.lng}`;
-      row.querySelector(
+      tr.querySelector(
         ".best-guess"
-      ).textContent = `${bestPlayer} (${distanceKm} km, ${score} score)`;
-      row.querySelector(
+      ).textContent = `${bestPlayer} (${distanceKm} km, ${score} pts)`;
+      tr.querySelector(
         ".fastest-guess"
       ).textContent = `${fastestPlayer} (${time})`;
 
-      tableBody.appendChild(row);
+      if (detail.playerGuesses.length > 0) {
+        tr.style.cursor = "pointer";
+        tr.addEventListener("click", () =>
+          this.togglePlayerGuesses(tr, detail.playerGuesses, roundDetails)
+        );
+      } else {
+        tr.querySelector(".expand-arrow").style.visibility = "hidden";
+      }
+
+      tableBody.appendChild(tr);
+    });
+
+    return tableContainer;
+  }
+
+  togglePlayerGuesses(rowElement, playerGuesses, roundDetails) {
+    const isExpanded = rowElement.classList.contains("expanded-deeper");
+
+    if (isExpanded) {
+      rowElement.classList.remove("expanded-deeper");
+      const detailsRow = rowElement.nextElementSibling;
+      if (
+        detailsRow &&
+        detailsRow.classList.contains("player-guesses-details-row")
+      ) {
+        detailsRow.remove();
+      }
+      return;
+    }
+
+    rowElement.classList.add("expanded-deeper");
+    const detailsTable = this.createPlayerGuessesTableHTML(
+      playerGuesses,
+      roundDetails
+    );
+
+    const detailsRow = document.createElement("tr");
+    detailsRow.classList.add("player-guesses-details-row");
+    const detailsCell = document.createElement("td");
+    detailsCell.colSpan = 6;
+    detailsCell.appendChild(detailsTable);
+    detailsRow.appendChild(detailsCell);
+    rowElement.insertAdjacentElement("afterend", detailsRow);
+  }
+
+  createPlayerGuessesTableHTML(playerGuesses, roundDetails) {
+    const tableTemplate = document.getElementById(
+      "player-guesses-table-template"
+    );
+    const rowTemplate = document.getElementById("player-guess-row-template");
+
+    const tableContainer = tableTemplate.content.cloneNode(true);
+    const tableBody = tableContainer.querySelector("tbody");
+
+    playerGuesses.sort((a, b) => b.score - a.score);
+
+    playerGuesses.forEach((guess) => {
+      const row = rowTemplate.content.cloneNode(true);
+      const tr = row.querySelector("tr");
+
+      const roundDetail = roundDetails.find(
+        (d) => d.roundNumber === guess.roundNumber
+      );
+      if (roundDetail) {
+        const correctPoint = roundDetail.correctPoint;
+        const guessLink = tr.querySelector(".guess-location a");
+
+        guessLink.href = `https://www.google.com/maps/dir/${guess.lat},${guess.lng}/${correctPoint.lat},${correctPoint.lng}`;
+        guessLink.textContent = "View Route";
+      } else {
+        const guessLink = tr.querySelector(".guess-location a");
+        guessLink.href = `https://www.google.com/maps?q=${guess.lat},${guess.lng}`;
+        guessLink.textContent = "View Point";
+      }
+
+      tr.querySelector(".player-name").textContent = guess.playerName;
+      tr.querySelector(".guess-score").textContent = guess.score;
+      tr.querySelector(".guess-distance").textContent = `${(
+        guess.distance / 1000
+      ).toFixed(2)} km`;
+      tr.querySelector(".guess-time").textContent = `${guess.time}s`;
+
+      tableBody.appendChild(tr);
     });
 
     return tableContainer;
@@ -1039,11 +1165,13 @@ class Stats {
   }
 }
 
+let statsInstance = null;
+
 async function populate() {
   setLoadingState(true);
   try {
-    var events = await getEvents();
-    new Stats(events);
+    const events = await getEvents();
+    statsInstance = new Stats(events);
   } catch (error) {
     console.error("Error populating stats:", error);
     setLoadingState(false);
@@ -1051,5 +1179,27 @@ async function populate() {
     setLoadingState(false);
   }
 }
+
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+  if (!statsInstance) {
+    console.log("Stats instance not ready yet, skipping message.");
+    return;
+  }
+  if (message.type === "newGameFinished") {
+    const newEvents = await getEvents();
+    const newGamesCount = newEvents.filter(
+      (e) => e.code === "LiveChallengeFinished"
+    ).length;
+
+    if (newGamesCount > statsInstance.totalGamesCount) {
+      console.log("New game data found. Updating UI...");
+      statsInstance.events = newEvents;
+      statsInstance.totalGamesCount = newGamesCount;
+      statsInstance.update();
+    } else {
+      console.log("No new game data. Skipping UI update.");
+    }
+  }
+});
 
 document.addEventListener("DOMContentLoaded", populate);
